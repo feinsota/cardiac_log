@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -359,6 +360,13 @@
       </div>
       <div style="font-size:11.5px;color:var(--text3);margin-top:10px;background:var(--surface2);border-radius:7px;padding:7px 11px;border:0.5px solid var(--border);">
         🎯 Target dry weight: <strong style="color:var(--text2);">126–129 lb</strong> &nbsp;·&nbsp; Contact ACHD if +2 lb overnight
+      </div>
+
+      <!-- HISTORY IMPORT -->
+      <div style="margin-top:10px;">
+        <button id="importHistoryBtn" onclick="runBuiltInImport()" style="width:100%;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.15s;">
+          ♥ Load weight history (Sep 2024 – Mar 2025)
+        </button>
       </div>
 
       <!-- TREND GRAPH -->
@@ -1315,10 +1323,155 @@ PLAN
 function copyReport(){navigator.clipboard.writeText(document.getElementById('reportText').textContent).then(()=>{const btn=document.getElementById('copyBtn');btn.textContent='Copied!';btn.className='copy-btn copied';setTimeout(()=>{btn.textContent='Copy to clipboard';btn.className='copy-btn';},2000);});}
 
 // ─────────────────────────────────────────────
+// BUILT-IN HISTORY IMPORT
+// ─────────────────────────────────────────────
+const HISTORY_WEIGHT = [
+  ['2024-09-14',133.6,'Post-ablation #1 (9/11). Likely IV fluid puffiness from procedure.'],
+  ['2024-09-15',132.0,'Post-ablation #1. -1.6 lb.'],
+  ['2024-09-16',131.2,'Post-ablation #1.'],
+  ['2024-09-17',129.8,'Post-ablation #1.'],
+  ['2024-09-18',129.8,'Post-ablation #1.'],
+  ['2024-09-19',130.2,'Post-ablation #1.'],
+  ['2024-09-20',130.0,'Post-ablation #1.'],
+  ['2024-09-21',130.8,'Post-ablation #1.'],
+  ['2024-09-22',130.2,'Post-ablation #1.'],
+  ['2024-09-23',130.0,'Post-ablation #1.'],
+  ['2024-09-24',129.2,'Post-ablation #1.'],
+  ['2024-09-25',128.2,'Post-ablation #1.'],
+  ['2024-10-05',127.8,'Prednisone started 9/27. s/p pred 50mg (9/29-10/2), pred 40mg (10/3). s/p methimazole 20mg (9/30-10/2), 15mg (10/3-10/6).'],
+  ['2024-10-07',126.0,'Possible dry weight. Discharged on methimazole 10mg daily, prednisone 30mg daily.'],
+  ['2024-10-08',126.6,''],['2024-10-09',127.4,''],['2024-10-10',127.4,''],['2024-10-11',126.6,''],
+  ['2024-10-12',127.2,''],['2024-10-13',127.6,''],['2024-10-14',128.8,''],['2024-10-16',127.4,''],
+  ['2024-10-17',134.7,'Ablation #2. Post-procedure weight with IV fluids.'],
+  ['2024-10-18',131.9,'Post-ablation #2.'],['2024-10-19',130.2,'Post-ablation #2.'],
+  ['2024-10-20',129.2,'Post-ablation #2.'],['2024-10-21',129.4,'Post-ablation #2.'],
+  ['2024-10-22',128.8,'Post-ablation #2.'],['2024-10-23',130.0,'Torsemide 100mg + extra K.'],
+  ['2024-10-24',129.6,''],['2024-10-25',130.2,''],['2024-10-26',130.6,'Torsemide 100mg + extra K.'],
+  ['2024-10-27',131.0,''],['2024-10-28',132.8,''],['2024-10-29',131.6,''],
+  ['2024-10-30',131.8,''],['2024-10-31',132.2,''],['2024-11-01',132.0,''],
+  ['2024-11-02',133.8,''],['2024-11-03',132.2,''],['2024-11-04',132.8,''],
+  ['2024-11-05',132.2,''],['2024-11-06',133.6,''],['2024-11-07',134.0,''],
+  ['2024-11-08',133.2,''],['2024-11-09',134.0,''],['2024-11-10',133.2,''],
+  ['2024-11-11',133.6,''],['2024-11-12',135.2,''],['2024-11-13',136.6,''],
+  ['2024-11-14',135.2,''],['2024-11-15',132.8,'Metolazone 2.5mg. -2.4 lb.'],
+  ['2024-11-16',134.6,'+1.8 lb.'],['2024-11-17',132.6,'Metolazone 2.5mg. -2.0 lb.'],
+  ['2024-11-18',133.0,'In hospital.'],['2024-11-19',134.0,'In hospital.'],
+  ['2024-11-20',134.9,'In hospital.'],['2024-11-21',136.2,'In hospital.'],
+  ['2024-11-22',134.8,'In hospital. -1.4 lb.'],['2024-11-23',136.0,'+1.2 lb.'],
+  ['2024-11-24',135.0,'-1.0 lb.'],['2024-11-25',137.2,'+2.2 lb.'],
+  ['2024-11-26',137.2,''],['2024-11-27',137.4,''],['2024-11-28',137.6,''],
+  ['2024-11-29',138.2,'+0.6 lb.'],['2024-11-30',137.6,'-0.6 lb.'],
+  ['2024-12-01',138.0,''],['2024-12-02',139.0,''],['2024-12-03',139.0,''],
+  ['2024-12-04',139.0,'Torsemide 120mg.'],['2024-12-05',138.4,'Torsemide 150mg.'],
+  ['2024-12-06',139.6,''],['2024-12-07',141.0,''],
+  ['2024-12-08',141.0,'Thyroidectomy today. Hydrocortisone 100mg IV given.'],
+  ['2024-12-10',144.6,'+3.6 lb. Hydrocortisone 50mg q6h x24hrs. Birthday.'],
+  ['2024-12-11',140.2,'-4.4 lb. Torsemide 140mg.'],
+  ['2024-12-12',142.6,'+2.4 lb. Torsemide 100mg, prednisone 30mg.'],
+  ['2024-12-13',141.8,'-0.8 lb. Torsemide 150mg, prednisone 25mg daily.'],
+  ['2024-12-14',142.4,'Torsemide 150mg.'],['2024-12-15',141.4,'Torsemide 150mg.'],
+  ['2024-12-16',142.4,'Torsemide 160mg. TSH 1.6 high sensitivity. Levothyroxine 100mcg started 12/9.'],
+  ['2024-12-17',142.2,'Torsemide 100mg, prednisone 20mg daily.'],
+  ['2024-12-18',142.4,'Torsemide 80mg. TSH 9.86.'],
+  ['2024-12-19',143.6,'Torsemide 60mg.'],['2024-12-20',142.6,'Torsemide 100mg.'],
+  ['2024-12-21',143.0,'Prednisone 15mg daily.'],
+  ['2024-12-22',142.8,'Levothyroxine switched to 100mcg 6x/week - free T4 slightly elevated at 1.98.'],
+  ['2024-12-23',143.6,''],['2024-12-24',143.8,''],
+  ['2024-12-25',144.2,'Started hydrocortisone 25mg AM / 15mg PM.'],
+  ['2024-12-26',146.2,''],['2024-12-27',146.2,''],
+  ['2024-12-28',147.6,'Hydrocortisone tapered to 15mg AM / 5mg PM.'],
+  ['2024-12-29',147.4,''],['2024-12-30',147.8,''],['2024-12-31',147.6,''],
+  ['2025-01-01',148.4,'Hydrocortisone 15mg daily.'],['2025-01-02',148.6,''],
+  ['2025-01-03',149.0,'Hydrocortisone 15mg AM / 5mg PM.'],['2025-01-04',149.2,''],
+  ['2025-01-05',148.6,''],['2025-01-06',148.0,''],
+  ['2025-01-07',147.8,'Torsemide 100mg.'],['2025-01-08',147.8,''],
+  ['2025-01-09',148.0,''],['2025-01-10',148.0,''],['2025-01-11',148.6,''],
+  ['2025-01-12',146.4,''],['2025-01-13',146.8,''],['2025-01-14',146.2,''],
+  ['2025-01-15',146.6,'Hydrocortisone tapered to 7.5mg AM / 2.5mg PM.'],
+  ['2025-01-16',146.6,''],['2025-01-17',146.0,''],['2025-01-18',146.0,''],
+  ['2025-01-19',146.0,''],['2025-01-20',146.0,''],['2025-01-21',146.8,''],
+  ['2025-01-22',146.0,''],['2025-01-23',147.0,''],
+  ['2025-01-24',147.4,'Hydrocortisone down to 5mg daily.'],
+  ['2025-01-25',146.0,''],['2025-01-26',144.6,''],
+  ['2025-01-27',144.4,'Last dose of hydrocortisone. Steroid course ended.'],
+  ['2025-01-28',144.6,''],['2025-01-29',144.8,''],
+  ['2025-01-30',144.4,'TSH 7.27. Levothyroxine reduced to 88mcg 6 days/week.'],
+  ['2025-01-31',144.6,''],['2025-02-01',142.8,''],['2025-02-02',143.2,''],
+  ['2025-02-03',142.4,''],['2025-02-04',142.2,''],['2025-02-05',142.8,''],
+  ['2025-02-06',142.2,''],['2025-02-07',142.4,''],['2025-02-08',141.4,''],
+  ['2025-02-09',142.2,''],['2025-02-10',142.4,''],['2025-02-11',142.4,''],
+  ['2025-02-12',143.4,''],
+  ['2025-02-13',142.4,'TSH 9.93. Levothyroxine increased back to 88mcg daily.'],
+  ['2025-02-14',142.2,''],['2025-02-15',143.2,''],['2025-02-16',143.2,''],
+  ['2025-02-17',142.4,''],['2025-02-18',142.2,''],['2025-02-19',142.0,''],
+  ['2025-02-20',142.0,'Tummy feels flatter in AM.'],['2025-02-21',141.8,''],
+  ['2025-02-22',141.2,'Tummy feels flatter in AM.'],
+  ['2025-02-23',140.8,''],['2025-02-24',141.2,''],['2025-02-25',140.8,''],
+  ['2025-02-26',140.6,''],['2025-02-27',140.8,''],['2025-02-28',140.2,''],
+  ['2025-03-01',140.4,''],['2025-03-02',140.0,''],['2025-03-03',140.6,''],
+  ['2025-03-04',139.6,''],['2025-03-05',139.4,''],['2025-03-06',138.8,''],
+  ['2025-03-07',138.6,''],['2025-03-08',138.8,''],['2025-03-09',138.2,''],
+  ['2025-03-10',138.2,''],['2025-03-11',137.8,''],['2025-03-12',138.0,''],
+  ['2025-03-13',137.6,''],['2025-03-14',137.6,''],['2025-03-15',137.2,''],
+  ['2025-03-16',137.0,''],
+  ['2025-03-17',136.6,'Levothyroxine decreased to 75mcg daily.'],
+  ['2025-03-18',137.2,''],['2025-03-19',136.4,''],['2025-03-20',136.6,''],
+  ['2025-03-21',136.6,''],['2025-03-22',136.4,'Torsemide 80mg.'],
+  ['2025-03-23',138.0,'Torsemide 80mg.'],['2025-03-24',135.0,'Torsemide 100mg for day.'],
+  ['2025-03-25',135.2,'Torsemide 40mg eve.'],['2025-03-26',134.8,'Torsemide 40mg eve.'],
+  ['2025-03-27',135.6,'Torsemide 50mg eve.'],['2025-03-28',135.0,''],
+  ['2025-03-29',134.6,''],['2025-03-30',135.0,''],
+  ['2025-03-31',135.2,'Levothyroxine decreased to 75mcg 6 days/week starting this week.'],
+];
+
+function runBuiltInImport() {
+  const btn = document.getElementById('importHistoryBtn');
+  btn.textContent = 'Importing...';
+  btn.disabled = true;
+  try {
+    let all = getAllDays();
+    let imported = 0, skipped = 0;
+    HISTORY_WEIGHT.forEach(([date, weight, notes]) => {
+      if (all[date] && all[date].weightAM) { skipped++; return; }
+      if (all[date]) {
+        all[date].weightAM = String(weight);
+        if (notes && !all[date].notes) all[date].notes = notes;
+      } else {
+        all[date] = { weightAM: String(weight), weightPrior: '', edema: '', funcStatus: '', symptoms: [], notes: notes||'', diuretics: [], fluids: [], outputs: [], bms: [], meals: [] };
+      }
+      imported++;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    drawWeightChart();
+    btn.textContent = '✓ ' + imported + ' days loaded!';
+    btn.style.background = 'var(--teal)';
+    setTimeout(() => {
+      btn.textContent = 'History loaded ✓';
+      btn.disabled = true;
+    }, 3000);
+  } catch(e) {
+    btn.textContent = 'Error — try again';
+    btn.disabled = false;
+  }
+}
+
+// ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
 loadDay(currentDate);
 window.addEventListener('resize', drawWeightChart);
+
+// Show import button only if history not yet loaded
+(function checkHistoryLoaded() {
+  const all = getAllDays();
+  const hasHistory = Object.keys(all).some(d => d < '2025-01-01');
+  const btn = document.getElementById('importHistoryBtn');
+  if (hasHistory) {
+    btn.textContent = 'History loaded ✓';
+    btn.disabled = true;
+    btn.style.background = 'var(--teal)';
+  }
+})();
 </script>
 </body>
 </html>
