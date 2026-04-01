@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Load Cardiac Log History</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background: #fdf8f6; color: #1e1410; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+  .card { background: white; border-radius: 16px; padding: 32px; max-width: 520px; width: 100%; box-shadow: 0 4px 24px rgba(180,60,40,0.1); text-align: center; }
+  .hearts { font-size: 28px; margin-bottom: 12px; }
+  h1 { font-size: 20px; margin-bottom: 8px; color: #1e1410; }
+  p { font-size: 14px; color: #6b4f47; line-height: 1.6; margin-bottom: 24px; }
+  .btn { display: inline-block; background: #c0392b; color: white; border: none; border-radius: 12px; padding: 14px 32px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.15s; }
+  .btn:hover { background: #e04f3e; }
+  .btn.done { background: #1a7a62; }
+  .status { margin-top: 18px; font-size: 13px; color: #a87b73; min-height: 20px; }
+  .count { font-size: 13px; color: #6b4f47; margin-top: 8px; }
+  .detail { font-size: 12px; color: #a87b73; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="hearts">♥ ♥ ♥</div>
+  <h1>Load Cardiac Log History</h1>
+  <p>Imports your full history: weight data from September 2024 through March 2025, plus detailed I/O, nutrition, and clinical notes for March 6–31. Will not overwrite days you have already logged manually.</p>
+  <button class="btn" id="loadBtn" onclick="loadHistory()">Import all history</button>
+  <div class="status" id="status"></div>
+  <div class="count" id="count"></div>
+  <div class="detail" id="detail"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'cardiacLog_days';
+
+const weightHistory = [
+  ['2024-09-14', 133.6, 'Post-ablation #1 (9/11). Likely IV fluid puffiness from procedure.'],
+  ['2024-09-15', 132.0, 'Post-ablation #1. -1.6 lb.'],
+  ['2024-09-16', 131.2, 'Post-ablation #1.'],
+  ['2024-09-17', 129.8, 'Post-ablation #1.'],
+  ['2024-09-18', 129.8, 'Post-ablation #1.'],
+  ['2024-09-19', 130.2, 'Post-ablation #1.'],
+  ['2024-09-20', 130.0, 'Post-ablation #1.'],
+  ['2024-09-21', 130.8, 'Post-ablation #1.'],
+  ['2024-09-22', 130.2, 'Post-ablation #1.'],
+  ['2024-09-23', 130.0, 'Post-ablation #1.'],
+  ['2024-09-24', 129.2, 'Post-ablation #1.'],
+  ['2024-09-25', 128.2, 'Post-ablation #1.'],
+  ['2024-10-05', 127.8, 'Prednisone started 9/27. s/p pred 50mg (9/29-10/2), pred 40mg (10/3). s/p methimazole 20mg (9/30-10/2), 15mg (10/3-10/6).'],
+  ['2024-10-07', 126.0, 'Possible dry weight. Discharged on methimazole 10mg daily, prednisone 30mg daily.'],
+  ['2024-10-08', 126.6, ''],
+  ['2024-10-09', 127.4, ''],
+  ['2024-10-10', 127.4, ''],
+  ['2024-10-11', 126.6, ''],
+  ['2024-10-12', 127.2, ''],
+  ['2024-10-13', 127.6, ''],
+  ['2024-10-14', 128.8, ''],
+  ['2024-10-16', 127.4, ''],
+  ['2024-10-17', 134.7, 'Ablation #2. Post-procedure weight with IV fluids.'],
+  ['2024-10-18', 131.9, 'Post-ablation #2.'],
+  ['2024-10-19', 130.2, 'Post-ablation #2.'],
+  ['2024-10-20', 129.2, 'Post-ablation #2.'],
+  ['2024-10-21', 129.4, 'Post-ablation #2.'],
+  ['2024-10-22', 128.8, 'Post-ablation #2.'],
+  ['2024-10-23', 130.0, 'Torsemide 100mg + extra K.'],
+  ['2024-10-24', 129.6, ''],
+  ['2024-10-25', 130.2, ''],
+  ['2024-10-26', 130.6, 'Torsemide 100mg + extra K.'],
+  ['2024-10-27', 131.0, ''],
+  ['2024-10-28', 132.8, ''],
+  ['2024-10-29', 131.6, ''],
+  ['2024-10-30', 131.8, ''],
+  ['2024-10-31', 132.2, ''],
+  ['2024-11-01', 132.0, ''],
+  ['2024-11-02', 133.8, ''],
+  ['2024-11-03', 132.2, ''],
+  ['2024-11-04', 132.8, ''],
+  ['2024-11-05', 132.2, ''],
+  ['2024-11-06', 133.6, ''],
+  ['2024-11-07', 134.0, ''],
+  ['2024-11-08', 133.2, ''],
+  ['2024-11-09', 134.0, ''],
+  ['2024-11-10', 133.2, ''],
+  ['2024-11-11', 133.6, ''],
+  ['2024-11-12', 135.2, ''],
+  ['2024-11-13', 136.6, ''],
+  ['2024-11-14', 135.2, ''],
+  ['2024-11-15', 132.8, 'Metolazone 2.5mg. -2.4 lb.'],
+  ['2024-11-16', 134.6, '+1.8 lb.'],
+  ['2024-11-17', 132.6, 'Metolazone 2.5mg. -2.0 lb.'],
+  ['2024-11-18', 133.0, 'In hospital.'],
+  ['2024-11-19', 134.0, 'In hospital.'],
+  ['2024-11-20', 134.9, 'In hospital.'],
+  ['2024-11-21', 136.2, 'In hospital.'],
+  ['2024-11-22', 134.8, 'In hospital. -1.4 lb.'],
+  ['2024-11-23', 136.0, '+1.2 lb.'],
+  ['2024-11-24', 135.0, '-1.0 lb.'],
+  ['2024-11-25', 137.2, '+2.2 lb.'],
+  ['2024-11-26', 137.2, ''],
+  ['2024-11-27', 137.4, ''],
+  ['2024-11-28', 137.6, ''],
+  ['2024-11-29', 138.2, '+0.6 lb.'],
+  ['2024-11-30', 137.6, '-0.6 lb.'],
+  ['2024-12-01', 138.0, ''],
+  ['2024-12-02', 139.0, ''],
+  ['2024-12-03', 139.0, ''],
+  ['2024-12-04', 139.0, 'Torsemide 120mg.'],
+  ['2024-12-05', 138.4, 'Torsemide 150mg.'],
+  ['2024-12-06', 139.6, ''],
+  ['2024-12-07', 141.0, ''],
+  ['2024-12-08', 141.0, 'Thyroidectomy today. Hydrocortisone 100mg IV given.'],
+  ['2024-12-10', 144.6, '+3.6 lb. Hydrocortisone 50mg q6h x 24hrs. Birthday.'],
+  ['2024-12-11', 140.2, '-4.4 lb. Torsemide 140mg.'],
+  ['2024-12-12', 142.6, '+2.4 lb. Torsemide 100mg, prednisone 30mg.'],
+  ['2024-12-13', 141.8, '-0.8 lb. Torsemide 150mg, prednisone 25mg daily.'],
+  ['2024-12-14', 142.4, 'Torsemide 150mg.'],
+  ['2024-12-15', 141.4, 'Torsemide 150mg.'],
+  ['2024-12-16', 142.4, 'Torsemide 160mg. TSH 1.6 high sensitivity. Levothyroxine 100mcg started 12/9.'],
+  ['2024-12-17', 142.2, 'Torsemide 100mg, prednisone 20mg daily.'],
+  ['2024-12-18', 142.4, 'Torsemide 80mg. TSH 9.86.'],
+  ['2024-12-19', 143.6, 'Torsemide 60mg.'],
+  ['2024-12-20', 142.6, 'Torsemide 100mg.'],
+  ['2024-12-21', 143.0, 'Prednisone 15mg daily.'],
+  ['2024-12-22', 142.8, 'Levothyroxine switched to 100mcg 6x/week - free T4 slightly elevated at 1.98.'],
+  ['2024-12-23', 143.6, ''],
+  ['2024-12-24', 143.8, ''],
+  ['2024-12-25', 144.2, 'Started hydrocortisone 25mg AM / 15mg PM.'],
+  ['2024-12-26', 146.2, ''],
+  ['2024-12-27', 146.2, ''],
+  ['2024-12-28', 147.6, 'Hydrocortisone tapered to 15mg AM / 5mg PM.'],
+  ['2024-12-29', 147.4, ''],
+  ['2024-12-30', 147.8, ''],
+  ['2024-12-31', 147.6, ''],
+  ['2025-01-01', 148.4, 'Hydrocortisone 15mg daily.'],
+  ['2025-01-02', 148.6, ''],
+  ['2025-01-03', 149.0, 'Hydrocortisone 15mg AM / 5mg PM.'],
+  ['2025-01-04', 149.2, ''],
+  ['2025-01-05', 148.6, ''],
+  ['2025-01-06', 148.0, ''],
+  ['2025-01-07', 147.8, 'Torsemide 100mg.'],
+  ['2025-01-08', 147.8, ''],
+  ['2025-01-09', 148.0, ''],
+  ['2025-01-10', 148.0, ''],
+  ['2025-01-11', 148.6, ''],
+  ['2025-01-12', 146.4, ''],
+  ['2025-01-13', 146.8, ''],
+  ['2025-01-14', 146.2, ''],
+  ['2025-01-15', 146.6, 'Hydrocortisone tapered to 7.5mg AM / 2.5mg PM.'],
+  ['2025-01-16', 146.6, ''],
+  ['2025-01-17', 146.0, ''],
+  ['2025-01-18', 146.0, ''],
+  ['2025-01-19', 146.0, ''],
+  ['2025-01-20', 146.0, ''],
+  ['2025-01-21', 146.8, ''],
+  ['2025-01-22', 146.0, ''],
+  ['2025-01-23', 147.0, ''],
+  ['2025-01-24', 147.4, 'Hydrocortisone down to 5mg daily.'],
+  ['2025-01-25', 146.0, ''],
+  ['2025-01-26', 144.6, ''],
+  ['2025-01-27', 144.4, 'Last dose of hydrocortisone. Steroid course ended.'],
+  ['2025-01-28', 144.6, ''],
+  ['2025-01-29', 144.8, ''],
+  ['2025-01-30', 144.4, 'TSH 7.27. Levothyroxine reduced to 88mcg 6 days/week.'],
+  ['2025-01-31', 144.6, ''],
+  ['2025-02-01', 142.8, ''],
+  ['2025-02-02', 143.2, ''],
+  ['2025-02-03', 142.4, ''],
+  ['2025-02-04', 142.2, ''],
+  ['2025-02-05', 142.8, ''],
+  ['2025-02-06', 142.2, ''],
+  ['2025-02-07', 142.4, ''],
+  ['2025-02-08', 141.4, ''],
+  ['2025-02-09', 142.2, ''],
+  ['2025-02-10', 142.4, ''],
+  ['2025-02-11', 142.4, ''],
+  ['2025-02-12', 143.4, ''],
+  ['2025-02-13', 142.4, 'TSH 9.93. Levothyroxine increased back to 88mcg daily.'],
+  ['2025-02-14', 142.2, ''],
+  ['2025-02-15', 143.2, ''],
+  ['2025-02-16', 143.2, ''],
+  ['2025-02-17', 142.4, ''],
+  ['2025-02-18', 142.2, ''],
+  ['2025-02-19', 142.0, ''],
+  ['2025-02-20', 142.0, 'Tummy feels flatter in AM.'],
+  ['2025-02-21', 141.8, ''],
+  ['2025-02-22', 141.2, 'Tummy feels flatter in AM.'],
+  ['2025-02-23', 140.8, ''],
+  ['2025-02-24', 141.2, ''],
+  ['2025-02-25', 140.8, ''],
+  ['2025-02-26', 140.6, ''],
+  ['2025-02-27', 140.8, ''],
+  ['2025-02-28', 140.2, ''],
+  ['2025-03-01', 140.4, ''],
+  ['2025-03-02', 140.0, ''],
+  ['2025-03-03', 140.6, ''],
+  ['2025-03-04', 139.6, ''],
+  ['2025-03-05', 139.4, ''],
+];
+
+function mkDay(weightAM, weightPrior, notes, diuretics, fluids, outputs, bms, meals, symptoms, edema, funcStatus) {
+  return { weightAM: String(weightAM), weightPrior: String(weightPrior), edema: edema||'', funcStatus: funcStatus||'', symptoms: symptoms||[], notes: notes||'', diuretics: diuretics||[], fluids: fluids||[], outputs: outputs||[], bms: bms||[], meals: meals||[] };
+}
+
+function mkMeals(arr) {
+  return arr.map((m, mi) => ({ id: 900+mi, name: m.name, foods: m.foods.map((f,fi) => ({ fid: 9000+(mi*100)+fi, name: f.n, kcal: String(f.k||0), sod: String(f.s||0), carb: String(f.c||0), prot: String(f.p||0), fat: String(f.f||0) })) }));
+}
+function mkFluids(arr) { return arr.map((f,i) => ({ id: 800+i, oz: String(f.oz), name: f.name, nutrition: f.nut||null })); }
+function mkOutputs(arr) { return arr.map((o,i) => ({ id: 700+i, time: o.t, vol: String(o.v) })); }
+function mkBms(arr) { return arr.map((b,i) => ({ id: 600+i, time: b })); }
+function mkDiu(arr) { return arr.map(d => ({ time: d.t, name: d.n })); }
+
+const detailedDays = {
+'2025-03-06': mkDay(138.8, 139.4,
+  'Levothyroxine decreased to 75mcg daily on 3/17.',
+  [], [], [], [], mkMeals([
+    {name:'Lunch', foods:[{n:'Wawa Junior Smoked Honey Turkey Sub',k:320,s:890,c:38,p:22,f:8},{n:'Small Hi-C Fruit Punch Wawa',k:100,s:20,c:27,p:0,f:0}]},
+    {name:'Snack', foods:[{n:'2 Homemade Garlic Breadsticks',k:400,s:180,c:60,p:10,f:14}]},
+    {name:'Dinner', foods:[{n:'2 Small Russet Potatoes as fries with light salt',k:240,s:80,c:54,p:6,f:0}]},
+  ])),
+
+'2025-03-09': mkDay(138.2, 138.8,
+  'Potassium supplement: 100 mEq KCl (~3,900mg K). Total daily K ~4,800-5,000mg. Daily totals: ~1,285-1,295 kcal, ~1,050-1,070mg sodium.',
+  [],
+  mkFluids([{oz:4,name:"Mott's Apple Juice half bottle",nut:{kcal:60,sodium_mg:10,carbs_g:15,protein_g:0,fat_g:0}}]),
+  [], [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:"1 slice Pepperidge Farm White Bread + 1T WF PB + Welch's grape jelly + Activia blueberry yogurt drink",k:345,s:250,c:53,p:9,f:11}]},
+    {name:'Lunch', foods:[{n:'Manischewitz egg noodles + NP low sodium chicken broth + Jayuss low sodium ramen seasoning',k:215,s:325,c:39,p:8,f:2},{n:'Mixed fruit 1oz',k:15,s:0,c:4,p:0,f:0}]},
+    {name:'Dinner', foods:[{n:'Homemade chicken nuggets 6 pieces',k:300,s:280,c:18,p:28,f:12},{n:'Jasmine rice with NP low sodium chicken broth',k:200,s:60,c:44,p:4,f:0}]},
+    {name:'Snack', foods:[{n:'Homemade potato chips 1 small russet 2 twists Himalayan salt',k:130,s:90,c:30,p:3,f:0},{n:'2 Hershey mini bars',k:80,s:25,c:10,p:1,f:4}]},
+  ])),
+
+'2025-03-10': mkDay(138.2, 138.2,
+  'Daily totals: ~1,315 kcal, ~1,317mg sodium.',
+  [], [], [], [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'1/2 cup fresh mixed fruit Wegmans',k:40,s:5,c:10,p:0,f:0},{n:"1/2 PBJ sandwich Pepperidge Farm white + WF PB + Welch's grape jelly",k:200,s:110,c:28,p:5,f:8}]},
+    {name:'Lunch', foods:[{n:"1/2 Campbell's Creamy Tomato Soup microwavable",k:90,s:360,c:16,p:2,f:2},{n:'1/2 russet potato chips 2 grinds Himalayan salt',k:80,s:50,c:18,p:2,f:0},{n:"3 Nature's Promise Vanilla Wafers",k:60,s:40,c:10,p:1,f:2},{n:'1 slice Wegmans off the bone turkey breast',k:30,s:55,c:0,p:6,f:1}]},
+    {name:'Dinner', foods:[{n:'Plain penne 2 cups cooked',k:400,s:15,c:82,p:14,f:2},{n:'Tomato sauce 1/2 cup restaurant style',k:80,s:380,c:14,p:2,f:2},{n:'Tiny piece grilled chicken parm ~1oz',k:75,s:200,c:2,p:9,f:4},{n:'Cucumber salad oil & vinegar 1/2 cup',k:60,s:25,c:4,p:1,f:5},{n:'1/4 slice Trenton tomato pie',k:95,s:200,c:12,p:3,f:4},{n:'2 Hershey mini bars 1 dark 1 milk',k:80,s:25,c:10,p:1,f:4}]},
+  ])),
+
+'2025-03-11': mkDay(137.8, 138.2,
+  'Daily totals: ~1,140 kcal, ~1,162mg sodium, ~69g protein.',
+  [],
+  mkFluids([{oz:12,name:'Sprite with tea can',nut:{kcal:140,sodium_mg:45,carbs_g:38,protein_g:0,fat_g:0}}]),
+  [], [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'1/2 cup fresh fruit Wegmans',k:40,s:5,c:10,p:0,f:0},{n:"Mott's Apple Juice 4 fl oz",k:60,s:10,c:15,p:0,f:0}]},
+    {name:'Lunch', foods:[{n:'1/2 russet potato chips 2 turns Himalayan salt',k:80,s:50,c:18,p:2,f:0},{n:'1.5 slices Wegmans off the bone turkey breast',k:45,s:82,c:0,p:9,f:1},{n:"3 Nature's Promise Vanilla Wafers",k:60,s:40,c:10,p:1,f:2},{n:'1 Bell & Evans GF organic chicken tender',k:110,s:170,c:7,p:10,f:4}]},
+    {name:'Dinner', foods:[{n:'Steamed Chinese chicken with 1-2T brown sauce',k:220,s:480,c:8,p:32,f:6},{n:'1 cup Singapore rice noodles no meat no veg no salt',k:220,s:280,c:42,p:5,f:3}]},
+  ])),
+
+'2025-03-13': mkDay(137.6, 138.0, '',
+  [],
+  mkFluids([
+    {oz:8,name:"Mott's Apple Juice 8 fl oz",nut:{kcal:120,sodium_mg:15,carbs_g:29,protein_g:0,fat_g:0}},
+    {oz:8,name:'Evolution Fresh OJ 8 fl oz',nut:{kcal:110,sodium_mg:0,carbs_g:26,protein_g:2,fat_g:0}},
+    {oz:7.5,name:'Sprite 7.5 fl oz',nut:{kcal:90,sodium_mg:30,carbs_g:25,protein_g:0,fat_g:0}},
+  ]),
+  [], [],
+  mkMeals([
+    {name:'Lunch', foods:[{n:'1 serving Wegmans Off the Bone Turkey Breast',k:60,s:220,c:1,p:12,f:1},{n:"Campbell's Creamy Tomato Soup microwavable (75%)",k:135,s:540,c:24,p:3,f:3}]},
+    {name:'Dinner', foods:[{n:'4 slices homemade pizza',k:560,s:840,c:72,p:24,f:18}]},
+  ])),
+
+'2025-03-15': mkDay(137.2, 137.6,
+  'Torsemide 20mg 9AM, 60mg 8:26PM. Voids: 7AM 30sec, 10AM 15sec small, 12PM 50sec strong, 2:30PM 30sec strong, 5:28PM 26sec small, 8:26PM 22sec small.',
+  mkDiu([{t:'09:00',n:'Torsemide 20mg'},{t:'20:26',n:'Torsemide 60mg'}]),
+  mkFluids([
+    {oz:8,name:'8 fl oz water'},{oz:4,name:"Mott's Apple Juice 4 fl oz",nut:{kcal:60,sodium_mg:10,carbs_g:15,protein_g:0,fat_g:0}},
+    {oz:8,name:'Evolution Fresh OJ 8 fl oz',nut:{kcal:110,sodium_mg:0,carbs_g:26,protein_g:2,fat_g:0}},
+    {oz:8,name:'8 fl oz water'},{oz:8,name:'8 fl oz water'},{oz:8,name:'8 fl oz water'},
+    {oz:7.5,name:'Sprite 7.5 fl oz',nut:{kcal:90,sodium_mg:30,carbs_g:25,protein_g:0,fat_g:0}},
+    {oz:7.5,name:'Ginger Ale 7.5 fl oz',nut:{kcal:80,sodium_mg:25,carbs_g:21,protein_g:0,fat_g:0}},
+    {oz:8,name:'Gatorade electrolyte water 8 fl oz',nut:{kcal:0,sodium_mg:160,carbs_g:0,protein_g:0,fat_g:0}},
+    {oz:6,name:'6 fl oz water'},{oz:8,name:'8 fl oz water'},
+  ]),
+  mkOutputs([{t:'07:00',v:300},{t:'10:00',v:150},{t:'12:00',v:500},{t:'14:30',v:300},{t:'17:28',v:150},{t:'20:26',v:150}]),
+  [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'1 oz smoked salmon with lemon juice',k:40,s:270,c:0,p:6,f:2}]},
+    {name:'Lunch', foods:[{n:'Homemade pizza 75% WF thin crust + Botticelli sauce + 365 mozzarella',k:380,s:520,c:48,p:16,f:14}]},
+    {name:'Dinner', foods:[{n:"1/16 loaf NP sesame bread + 1T WF unsalted PB + thin slice no salt turkey + Boar's Head mustard",k:200,s:130,c:22,p:10,f:7},{n:'Simply Asia sesame teriyaki noodles 50% sauce 60% noodles',k:180,s:480,c:32,p:5,f:4}]},
+  ])),
+
+'2025-03-16': mkDay(137.0, 137.2,
+  'Daily totals: ~1,350-1,450 kcal, ~1,380-1,670mg sodium, ~65-75g protein. Major sodium sources: smoked salmon, pickles, cheese.',
+  [],
+  mkFluids([
+    {oz:8,name:"Mott's Apple Juice 8 fl oz",nut:{kcal:120,sodium_mg:15,carbs_g:29,protein_g:0,fat_g:0}},
+    {oz:7.5,name:'Sprite 7.5 fl oz',nut:{kcal:90,sodium_mg:30,carbs_g:25,protein_g:0,fat_g:0}},
+  ]),
+  [], [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'2 oz smoked salmon',k:80,s:540,c:0,p:12,f:3}]},
+    {name:'Lunch', foods:[{n:"Nature's Promise sesame bread 2 slices + Boar's Head no salt turkey + mustard + oil/vinegar + 2 pepperoncini + 4 BestMaid pickles",k:320,s:470,c:34,p:18,f:9},{n:'Pop Chips Sea Salt',k:100,s:70,c:19,p:2,f:3}]},
+    {name:'Snack', foods:[{n:"3 Sweet Loren's chocolate chip cookies",k:240,s:135,c:33,p:3,f:11}]},
+    {name:'Dinner', foods:[{n:'Homemade baked ziti ~1 cup (ziti rigate + 365 pizza cheese + Galbani low fat ricotta + Hoboken Farms low sodium marinara)',k:450,s:435,c:58,p:22,f:14}]},
+  ])),
+
+'2025-03-17': mkDay(136.6, 137.0,
+  'Levothyroxine decreased to 75mcg daily today. Daily totals: ~1,330-1,450 kcal, ~1,430-1,680mg sodium.',
+  [],
+  mkFluids([{oz:16,name:"Mott's Apple Juice 8 fl oz x2",nut:{kcal:240,sodium_mg:30,carbs_g:58,protein_g:0,fat_g:0}}]),
+  [], [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'Yoplait Strawberry Yogurt',k:170,s:95,c:33,p:5,f:2}]},
+    {name:'Lunch', foods:[{n:"1/32 loaf NP sesame bread + 2 thin slices Boar's Head no salt turkey + Grey Poupon + 3 BestMaid pickles + oil & vinegar + Pop Chips Sea Salt",k:285,s:425,c:32,p:15,f:9}]},
+    {name:'Snack', foods:[{n:"2 Sweet Loren's Chocolate Chip Cookies",k:250,s:140,c:34,p:2,f:11}]},
+    {name:'Dinner', foods:[{n:'Grilled chicken plate with seasoned yellow rice, peppers/onions, 4 Kalamata olives, tzatziki',k:550,s:840,c:55,p:38,f:18}]},
+  ])),
+
+'2025-03-19': mkDay(136.4, 136.6,
+  'Diuretics: Torsemide 20mg 9AM, 20mg 2:30PM. Voids: 4:25PM 49sec medium, 5:44PM 39sec medium. 30 fl oz water 3-4PM. Fluid intake incomplete outside juices. 5:46PM 10 fl oz water.',
+  mkDiu([{t:'09:00',n:'Torsemide 20mg'},{t:'14:30',n:'Torsemide 20mg'}]),
+  mkFluids([
+    {oz:6,name:'Honest Kids Fruit Punch 6 fl oz',nut:{kcal:20,sodium_mg:10,carbs_g:5,protein_g:0,fat_g:0}},
+    {oz:6,name:'Evolution Fresh OJ 6 fl oz',nut:{kcal:83,sodium_mg:0,carbs_g:19,protein_g:1,fat_g:0}},
+    {oz:30,name:'30 fl oz water 3-4PM'},{oz:10,name:'10 fl oz water 5:46PM'},
+  ]),
+  mkOutputs([{t:'16:25',v:500},{t:'17:44',v:300}]),
+  [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'Evolution Fresh OJ 6 fl oz + Quaker Chewy 25% less sugar chocolate chip bar + Honest Kids Fruit Punch',k:220,s:100,c:42,p:3,f:3}]},
+    {name:'Lunch', foods:[{n:'Subway Turkey Protein Bowl no bread',k:225,s:1800,c:12,p:20,f:11}]},
+    {name:'Dinner', foods:[{n:'1 corn tortilla with Pam + Gringo medium salsa',k:80,s:210,c:14,p:2,f:2}]},
+  ])),
+
+'2025-03-20': mkDay(136.6, 136.4,
+  'Daily totals: ~1,125-1,160 kcal, ~1,140-1,190mg sodium. Sodium well controlled. Protein a bit low (under 50g).',
+  [],
+  mkFluids([
+    {oz:6,name:'Evolution Fresh OJ 6 fl oz',nut:{kcal:83,sodium_mg:0,carbs_g:19,protein_g:1,fat_g:0}},
+    {oz:7.5,name:'Sprite 7.5 fl oz',nut:{kcal:90,sodium_mg:30,carbs_g:25,protein_g:0,fat_g:0}},
+    {oz:6,name:'Honest Kids Super Fruit Punch 6 fl oz',nut:{kcal:20,sodium_mg:10,carbs_g:5,protein_g:0,fat_g:0}},
+    {oz:6,name:'Honest Kids Super Fruit Punch 6 fl oz',nut:{kcal:20,sodium_mg:10,carbs_g:5,protein_g:0,fat_g:0}},
+  ]),
+  [], [],
+  mkMeals([
+    {name:'Lunch', foods:[
+      {n:"4\" NP semolina sesame bread hollowed + 1/2 Boar's Head American cheese + Grey Poupon + oil/vinegar + 2 thin slices no salt turkey + 4 BestMaid pickles + 1 pepperoncini",k:210,s:530,c:16,p:13,f:9},
+      {n:'8 Pop Chips Sea Salt',k:100,s:65,c:19,p:2,f:3},
+      {n:"Sweet Loren's Chocolate Chip Cookie 1",k:120,s:55,c:16,p:1,f:6},
+    ]},
+    {name:'Dinner', foods:[{n:'Minute Jasmine Rice 75% cup + low sodium sauce 160mg + sesame chicken 350 kcal 300mg sodium',k:520,s:460,c:72,p:24,f:14}]},
+  ])),
+
+'2025-03-21': mkDay(136.6, 136.6,
+  'Diuretics: 20mg Torsemide 8:30AM, 60mg 8:06PM. Voids: 6:45AM 38sec med, 11:23AM 24sec small-med, 2:04PM 21sec small, 9:48PM 37sec med.',
+  mkDiu([{t:'08:30',n:'Torsemide 20mg'},{t:'20:06',n:'Torsemide 60mg'}]),
+  mkFluids([
+    {oz:5,name:'5 fl oz water 3:30AM'},{oz:5,name:'5 fl oz water 5:30AM'},
+    {oz:7,name:'7 fl oz water'},{oz:6,name:'6 fl oz water'},
+    {oz:6,name:'Honest Kids Super Fruit Punch 6 fl oz',nut:{kcal:20,sodium_mg:10,carbs_g:5,protein_g:0,fat_g:0}},
+    {oz:25,name:'25 fl oz water'},{oz:10,name:'10 fl oz water'},{oz:9,name:'9 fl oz water'},
+    {oz:6,name:'Honest Kids Super Fruit Punch 6 fl oz',nut:{kcal:20,sodium_mg:10,carbs_g:5,protein_g:0,fat_g:0}},
+  ]),
+  mkOutputs([{t:'06:45',v:300},{t:'11:23',v:150},{t:'14:04',v:150},{t:'21:48',v:300}]),
+  [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'3 Krispy Kreme Glazed Dots',k:300,s:150,c:42,p:4,f:13}]},
+    {name:'Lunch', foods:[{n:'3 Japanese steamed vegetable dumplings',k:135,s:150,c:18,p:5,f:4},{n:'5-piece seaweed cucumber sushi roll',k:130,s:35,c:28,p:3,f:0},{n:'1 tsp low sodium soy sauce',k:5,s:291,c:1,p:1,f:0}]},
+    {name:'Dinner', foods:[
+      {n:'5 oz Atlantic Wild cod breaded matzo meal + cornmeal no salt',k:220,s:125,c:18,p:28,f:4},
+      {n:'1/4 cup homemade tomatillo chili salsa',k:30,s:125,c:6,p:1,f:0},
+      {n:'18 homemade no salt corn tortilla chips',k:150,s:35,c:22,p:2,f:6},
+      {n:'1T Cacique Crema Mexicana',k:45,s:25,c:1,p:0,f:5},
+      {n:'1 Siete Maiz corn tortilla shell',k:50,s:30,c:10,p:1,f:1},
+      {n:"2 mini Hershey's bars 1 dark 1 milk",k:80,s:25,c:10,p:1,f:4},
+    ]},
+  ])),
+
+'2025-03-23': mkDay(138.0, 136.4,
+  '+1.6 lb. Torsemide 20mg 9:15AM, 60mg 8:45PM. 8 voids logged. BMs: 9:30AM, 2:19PM. Est. output ~1,150-1,350mL. Net balance ~+400-600mL pre-PM diuretic.',
+  mkDiu([{t:'09:15',n:'Torsemide 20mg'},{t:'20:45',n:'Torsemide 60mg'}]),
+  mkFluids([
+    {oz:7,name:'7 fl oz water overnight'},{oz:3,name:'3 fl oz water with levo'},
+    {oz:2,name:'2 fl oz iced peach tea'},{oz:12,name:'12 fl oz water with AM meds'},
+    {oz:10,name:"Martinelli's sparkling apple juice 10 fl oz",nut:{kcal:160,sodium_mg:10,carbs_g:39,protein_g:0,fat_g:0}},
+    {oz:8,name:'Harney & Sons iced peach tea 8 fl oz',nut:{kcal:70,sodium_mg:10,carbs_g:17,protein_g:0,fat_g:0}},
+    {oz:8,name:'8 fl oz water'},
+    {oz:8,name:'Moshi Asian Sparkling Water',nut:{kcal:0,sodium_mg:10,carbs_g:0,protein_g:0,fat_g:0}},
+    {oz:8,name:'Yuzu Peach Sparkling Water',nut:{kcal:0,sodium_mg:10,carbs_g:0,protein_g:0,fat_g:0}},
+    {oz:6,name:'6 fl oz water'},{oz:4,name:'4 fl oz water'},
+  ]),
+  mkOutputs([{t:'04:50',v:300},{t:'08:30',v:300},{t:'11:00',v:150},{t:'13:06',v:300},{t:'17:35',v:300},{t:'21:40',v:300},{t:'22:24',v:300},{t:'23:11',v:500}]),
+  mkBms(['09:30','14:19']),
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'Quaker Chewy 25% less sugar chocolate chip bar',k:100,s:90,c:18,p:2,f:3},{n:'11 black seedless grapes',k:38,s:1,c:10,p:0,f:0}]},
+    {name:'Lunch', foods:[
+      {n:"Homemade turkey sub 4\" semolina roll + 3 thin slices homemade turkey + homemade pickles + pepper relish + Grey Poupon",k:270,s:250,c:30,p:16,f:7},
+      {n:'Pop Chips Sea Salt',k:100,s:70,c:19,p:2,f:3},
+    ]},
+    {name:'Dinner', foods:[
+      {n:'WF thin pizza crust 1/3 + Botticelli sauce + 365 mozzarella + unsalted corn + ShopRite rotisserie chicken + 2-3 Kalamata olives',k:340,s:490,c:42,p:18,f:12},
+      {n:'1/2 cup farfalle + Mia Cucina tomato sauce + 1 tsp Galbani ricotta + 1/2 BelGioioso burrata',k:280,s:320,c:36,p:12,f:10},
+    ]},
+    {name:'Dessert', foods:[{n:'12 black seedless grapes',k:41,s:1,c:11,p:0,f:0}]},
+  ])),
+
+'2025-03-24': mkDay(135.0, 138.0,
+  '-3.0 lb. Torsemide 20mg 8:10AM, 80mg 8:39PM. 9 voids. BM 10:06AM. Est. intake ~68-70oz (~2000mL). Est. UO ~1,400-1,650mL. Net mildly positive. Sodium high due to restaurant lunch (By Antidote). Daily totals: ~1,170-1,410 kcal, ~2,000-2,900mg sodium.',
+  mkDiu([{t:'08:10',n:'Torsemide 20mg'},{t:'20:39',n:'Torsemide 80mg'}]),
+  mkFluids([
+    {oz:6,name:'6 fl oz water'},{oz:10,name:'10 fl oz water'},
+    {oz:4,name:"Harney & Sons organic peach iced tea 4 fl oz",nut:{kcal:35,sodium_mg:5,carbs_g:8,protein_g:0,fat_g:0}},
+    {oz:8,name:'8 fl oz water'},{oz:4,name:'4 fl oz water'},
+    {oz:10,name:'Cranberry/club soda 10 fl oz',nut:{kcal:50,sodium_mg:35,carbs_g:13,protein_g:0,fat_g:0}},
+    {oz:16.9,name:'16.9 fl oz water'},{oz:10,name:'10 fl oz water'},{oz:4,name:'4 fl oz water'},
+  ]),
+  mkOutputs([{t:'00:15',v:300},{t:'04:30',v:300},{t:'07:30',v:300},{t:'10:06',v:300},{t:'10:30',v:150},{t:'12:45',v:300},{t:'16:00',v:300},{t:'19:52',v:300},{t:'22:08',v:700}]),
+  mkBms(['10:06']),
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'Homemade semolina roll small low sodium',k:90,s:30,c:26,p:5,f:2},{n:'Smoked salmon lox ~1-1.5 oz',k:60,s:450,c:0,p:8,f:2},{n:'100% apple juice 1 bottle',k:120,s:30,c:29,p:0,f:0}]},
+    {name:'Lunch', foods:[{n:'By Antidote: cucumber salad 5-6 pieces + 2 scallion pancakes + shredded chicken with peppers ~8 pieces + 3 big scoops mustard green fried rice',k:700,s:1150,c:90,p:30,f:25}]},
+    {name:'Dinner', foods:[{n:'Spaghetti 2 small servings cooked',k:240,s:15,c:48,p:8,f:2},{n:'Tomato sauce 1/4 cup restaurant style',k:75,s:450,c:12,p:2,f:3},{n:'Pasta fagioli small serving',k:30,s:185,c:5,p:2,f:0}]},
+  ])),
+
+'2025-03-25': mkDay(135.2, 135.0,
+  '+0.2 lb. Torsemide 40mg 7:35PM. Evening: heavy calves, tummy feels distended/puffy. Volume stable to mildly positive. Daily totals: ~1,050-1,100 kcal, ~650-800mg sodium. Kidney-protective day reduced diuretic dose.',
+  mkDiu([{t:'19:35',n:'Torsemide 40mg'}]),
+  mkFluids([
+    {oz:8,name:'8 fl oz water overnight'},{oz:8,name:'8 fl oz water'},
+    {oz:5,name:"Walker's Japanese Sparkling Peach Soda 5 fl oz half can",nut:{kcal:45,sodium_mg:15,carbs_g:11,protein_g:0,fat_g:0}},
+    {oz:6,name:"Mott's Apple Juice 6 fl oz",nut:{kcal:90,sodium_mg:10,carbs_g:22,protein_g:0,fat_g:0}},
+    {oz:8,name:'Moshi Sparkling Water Fuji Apple + Concord Grape',nut:{kcal:0,sodium_mg:10,carbs_g:0,protein_g:0,fat_g:0}},
+    {oz:7.5,name:'Sprite 7.5 fl oz',nut:{kcal:90,sodium_mg:30,carbs_g:25,protein_g:0,fat_g:0}},
+  ]),
+  mkOutputs([{t:'05:30',v:300},{t:'07:40',v:150},{t:'10:26',v:300},{t:'14:50',v:300},{t:'17:50',v:150},{t:'20:55',v:300},{t:'21:42',v:300},{t:'23:10',v:150}]),
+  [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'Quaker Chewy 25% Less Sugar Chocolate Chip Bar',k:100,s:90,c:18,p:2,f:3},{n:'2 Krispy Kreme Glazed Dots',k:200,s:100,c:28,p:2,f:9}]},
+    {name:'Lunch', foods:[{n:'Homemade turkey sub: semolina roll + homemade oven turkey + Dijon + habanero pepper relish + homemade dill pickle chips',k:260,s:280,c:27,p:14,f:8},{n:'Pop Chips Sea Salt + 6 seedless black grapes',k:110,s:70,c:21,p:2,f:3}]},
+    {name:'Dinner', foods:[{n:"Spaghetti with 1/4 cup Hunt's No Salt Added tomato sauce",k:250,s:45,c:50,p:8,f:2}]},
+    {name:'Dessert', foods:[{n:"1 mini Hershey's + 1/2 cup Friendship No Salt Added cottage cheese + 6 seedless grapes",k:130,s:65,c:15,p:8,f:4}]},
+  ]), ['Fatigue']),
+
+'2025-03-26': mkDay(134.8, 135.2,
+  '-0.4 lb. PM: heavy calves, right calf itchy. Torsemide 40mg 8:30PM (only 1 void vs usual 3-4x from 80mg). Not thirsty - low intake 44 fl oz. 4 voids. BM 12:45PM. Daily: ~855-890 kcal, ~865-1,010mg sodium. Low sodium day. Fatigue likely caloric/hormonal not fluid overload.',
+  mkDiu([{t:'20:30',n:'Torsemide 40mg'}]),
+  mkFluids([
+    {oz:8,name:"Mott's Apple Juice 8 fl oz",nut:{kcal:120,sodium_mg:15,carbs_g:29,protein_g:0,fat_g:0}},
+    {oz:16,name:'16 fl oz water'},{oz:4,name:'4 fl oz water'},
+    {oz:7.5,name:'Sprite 7.5 fl oz',nut:{kcal:90,sodium_mg:30,carbs_g:25,protein_g:0,fat_g:0}},
+    {oz:8,name:'8 fl oz water'},{oz:8,name:'8 fl oz water'},{oz:8,name:'8 fl oz water'},
+  ]),
+  mkOutputs([{t:'09:25',v:300},{t:'12:43',v:150},{t:'15:45',v:150},{t:'21:51',v:300}]),
+  mkBms(['12:45']),
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'10 grapes',k:35,s:0,c:9,p:0,f:0}]},
+    {name:'Lunch', foods:[{n:'Homemade turkey sub',k:268,s:440,c:28,p:16,f:8},{n:'Pop Chips Sea Salt 1 bag',k:100,s:73,c:19,p:2,f:3}]},
+    {name:'Dinner', foods:[{n:'2 chicken tenders',k:190,s:275,c:10,p:18,f:8},{n:'1/2 cup low-sodium chicken rice',k:130,s:125,c:26,p:3,f:1}]},
+    {name:'Dessert', foods:[{n:'1 Cadbury egg',k:150,s:25,c:20,p:2,f:7}]},
+  ]), ['Fatigue']),
+
+'2025-03-28': mkDay(135.0, 135.6,
+  '-0.6 lb. AM symptoms: heavy feeling legs. Torsemide 50mg 7:45PM. 12 voids logged. Total fluid intake ~74.5 fl oz.',
+  mkDiu([{t:'19:45',n:'Torsemide 50mg'}]),
+  mkFluids([
+    {oz:6,name:'Honest Kids Fruit Punch 6 fl oz',nut:{kcal:20,sodium_mg:10,carbs_g:5,protein_g:0,fat_g:0}},
+    {oz:6,name:'Honest Kids Fruit Punch 6 fl oz',nut:{kcal:20,sodium_mg:10,carbs_g:5,protein_g:0,fat_g:0}},
+    {oz:8,name:'8 fl oz water'},{oz:4,name:'4 fl oz water'},{oz:4,name:'4 fl oz water'},
+    {oz:8,name:'8 fl oz water'},{oz:8,name:'8 fl oz water'},{oz:8,name:'8 fl oz water'},{oz:8,name:'8 fl oz water'},
+    {oz:7.5,name:'Sprite 7.5 fl oz',nut:{kcal:90,sodium_mg:30,carbs_g:25,protein_g:0,fat_g:0}},
+    {oz:5,name:'5 fl oz water'},
+  ]),
+  mkOutputs([{t:'01:30',v:150},{t:'03:30',v:150},{t:'08:00',v:300},{t:'09:57',v:150},{t:'13:50',v:300},{t:'16:05',v:150},{t:'19:10',v:300},{t:'20:28',v:300},{t:'21:00',v:300},{t:'21:34',v:300},{t:'22:12',v:300},{t:'23:14',v:500}]),
+  [],
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'2 oz Scottish smoked salmon',k:80,s:540,c:0,p:12,f:3}]},
+    {name:'Lunch', foods:[
+      {n:'Small portion Chinese steamed chicken + 1T mango sauce + white rice side',k:280,s:420,c:34,p:22,f:5},
+      {n:'3/4 cup hot and sour soup',k:90,s:450,c:10,p:4,f:3},
+      {n:'6 seedless red grapes',k:20,s:0,c:5,p:0,f:0},
+      {n:'1 mini Hershey milk chocolate miniature',k:40,s:10,c:5,p:0,f:2},
+      {n:'12 seedless red grapes + 2 cornichons',k:46,s:110,c:12,p:0,f:0},
+    ]},
+    {name:'Dinner', foods:[{n:'1/2 WF 365 thin pizza crust x3 + Botticelli pizza sauce + 365 mozzarella + 3 Creminelli pepperoni slices',k:660,s:1350,c:75,p:33,f:27}]},
+    {name:'Dessert', foods:[{n:'1/2 Cadbury Egg',k:75,s:13,c:10,p:1,f:4}]},
+  ]), ['Fatigue']),
+
+'2025-03-29': mkDay(134.6, 135.0,
+  '-0.4 lb. Severe fatigue/hypersomnolence - slept until ~12PM, nap 2:15-4:15PM. Cold intolerance. Marked lethargy. Reduced functional capacity vs baseline. Clinical context: recent levo dose adjustment, recent diuretic adjustment, steroid discontinuation recovery phase. Torsemide 50mg 8:08PM. Total fluid intake 83.5 fl oz (~2,470mL). UO ~1,540mL. Net balance mildly positive ~+130 to +430mL. Assessment: fatigue + cold intolerance NOT volume-driven - more likely thyroid disequilibrium, steroid withdrawal, low caloric intake. No evidence of decompensation. Daily: 1,390 kcal, 1,635mg sodium.',
+  mkDiu([{t:'20:08',n:'Torsemide 50mg'}]),
+  mkFluids([
+    {oz:60,name:'60 fl oz water throughout day'},
+    {oz:16,name:'Orange juice 16 fl oz',nut:{kcal:220,sodium_mg:0,carbs_g:52,protein_g:3,fat_g:0}},
+    {oz:7.5,name:'Sprite 7.5 fl oz',nut:{kcal:90,sodium_mg:30,carbs_g:25,protein_g:0,fat_g:0}},
+  ]),
+  mkOutputs([{t:'12:19',v:300},{t:'16:22',v:300},{t:'17:52',v:150},{t:'19:03',v:300},{t:'21:02',v:300},{t:'21:52',v:150},{t:'22:26',v:300}]),
+  mkBms(['12:00']),
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'Quaker Chewy 25% Less Sugar Chocolate Chip Bar',k:100,s:90,c:18,p:2,f:3}]},
+    {name:'Lunch', foods:[{n:'Turkey sub + egg noodle soup',k:540,s:730,c:65,p:28,f:14},{n:'20 seedless red grapes',k:70,s:0,c:18,p:0,f:0}]},
+    {name:'Dinner', foods:[{n:'Homemade yaki udon no vegetables',k:500,s:645,c:70,p:10,f:22}]},
+    {name:'Dessert', foods:[{n:'Oat milk vanilla drink',k:180,s:170,c:19,p:3,f:9}]},
+  ]), ['Fatigue','Dyspnea on exertion']),
+
+'2025-03-30': mkDay(135.0, 134.6,
+  '+0.4 lb. Torsemide 50mg 8:33PM. Overnight voids: 3AM, 5AM, 7:44AM. Daily totals: ~1,040-1,080 kcal, ~1,380-1,480mg sodium. Sodium near target - pizza well controlled (<500mg for portion).',
+  mkDiu([{t:'20:33',n:'Torsemide 50mg'}]),
+  mkFluids([
+    {oz:12,name:'12 fl oz water 6AM'},{oz:4,name:'4 fl oz water 3AM overnight'},{oz:6,name:'6 fl oz water'},
+    {oz:12,name:'Honest Kids Fruit Punch 12 fl oz 10:30AM',nut:{kcal:40,sodium_mg:20,carbs_g:10,protein_g:0,fat_g:0}},
+    {oz:8,name:'8 fl oz water with lunch'},{oz:8,name:'8 fl oz water'},
+    {oz:12,name:'Sprite Tea 12 fl oz',nut:{kcal:130,sodium_mg:35,carbs_g:35,protein_g:0,fat_g:0}},
+    {oz:6,name:'6 fl oz water'},{oz:8,name:'8 fl oz water'},{oz:8,name:'8 fl oz water'},
+  ]),
+  mkOutputs([{t:'03:00',v:300},{t:'05:00',v:300},{t:'07:44',v:300},{t:'12:19',v:150},{t:'16:34',v:150},{t:'18:33',v:150},{t:'21:59',v:300},{t:'22:40',v:300}]),
+  mkBms(['12:00']),
+  mkMeals([
+    {name:'Breakfast', foods:[{n:'Strathgarry Cold Smoked Scottish Style Salmon',k:120,s:600,c:0,p:16,f:6},{n:'16 seedless red grapes',k:55,s:1,c:14,p:0,f:0}]},
+    {name:'Lunch', foods:[{n:'Lunch estimated from notes',k:300,s:660,c:30,p:19,f:5}]},
+    {name:'Snack', foods:[{n:'Rice Krispies Treat homestyle original',k:130,s:135,c:26,p:1,f:3}]},
+    {name:'Dinner', foods:[{n:'1/2 WF 365 thin pizza crust + 1/4 cup DeLallo pizza sauce + S&S low moisture mozzarella + 3 Creminelli pepperoni slices',k:225,s:465,c:25,p:12,f:10}]},
+    {name:'Dessert', foods:[{n:'1 Cadbury Egg',k:150,s:25,c:20,p:2,f:7}]},
+  ])),
+
+'2025-03-31': mkDay(135.2, 135.0,
+  '+0.2 lb. Levothyroxine decreased to 75mcg 6 days/week starting this week.',
+  [], [], [], [], []),
+};
+
+function loadHistory() {
+  const btn = document.getElementById('loadBtn');
+  const status = document.getElementById('status');
+  const count = document.getElementById('count');
+  const detail = document.getElementById('detail');
+
+  btn.disabled = true;
+  btn.textContent = 'Importing...';
+  status.textContent = 'Writing to localStorage...';
+
+  try {
+    let existing = {};
+    try { existing = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { existing = {}; }
+
+    let weightImported = 0, detailImported = 0, skipped = 0;
+
+    weightHistory.forEach(([date, weight, notes]) => {
+      if (existing[date] && existing[date].weightAM) { skipped++; return; }
+      if (existing[date]) {
+        existing[date].weightAM = String(weight);
+        if (notes && !existing[date].notes) existing[date].notes = notes;
+        weightImported++;
+      } else {
+        existing[date] = { weightAM: String(weight), weightPrior: '', edema: '', funcStatus: '', symptoms: [], notes: notes||'', diuretics: [], fluids: [], outputs: [], bms: [], meals: [] };
+        weightImported++;
+      }
+    });
+
+    Object.entries(detailedDays).forEach(([date, day]) => {
+      if (existing[date] && existing[date].weightAM && existing[date].meals && existing[date].meals.length > 0) { skipped++; return; }
+      existing[date] = day;
+      detailImported++;
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+
+    const total = Object.keys(existing).length;
+    const sorted = Object.keys(existing).sort();
+    btn.textContent = '✓ Done!';
+    btn.classList.add('done');
+    btn.disabled = false;
+    status.textContent = 'Import complete.';
+    count.textContent = `${weightImported} weight-only days + ${detailImported} detailed days imported. ${skipped} skipped (already had data).`;
+    detail.textContent = `${total} total days in your log — ${sorted[0]} through ${sorted[sorted.length-1]}.`;
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Import history';
+    status.textContent = 'Error: ' + e.message;
+    console.error(e);
+  }
+}
+</script>
+</body>
+</html>
