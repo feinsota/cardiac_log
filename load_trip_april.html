@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Load Trip Data</title>
+<style>
+  body{font-family:-apple-system,sans-serif;background:#fdf8f6;color:#1e1410;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px;box-sizing:border-box;}
+  .card{background:white;border-radius:16px;padding:32px;max-width:520px;width:100%;box-shadow:0 4px 24px rgba(180,60,40,0.1);text-align:center;}
+  .hearts{font-size:28px;margin-bottom:12px;}
+  h1{font-size:20px;margin-bottom:8px;color:#1e1410;}
+  p{font-size:14px;color:#6b4f47;line-height:1.6;margin-bottom:24px;}
+  .btn{display:inline-block;background:#c0392b;color:white;border:none;border-radius:12px;padding:14px 32px;font-size:16px;font-weight:600;cursor:pointer;width:100%;transition:background 0.15s;}
+  .btn:hover{background:#e04f3e;}
+  .btn.done{background:#1a7a62;}
+  .status{margin-top:18px;font-size:13px;color:#a87b73;min-height:20px;}
+  .count{font-size:13px;color:#6b4f47;margin-top:8px;}
+  .detail{font-size:12px;color:#a87b73;margin-top:6px;}
+  .warning{background:#fef3c7;border:0.5px solid #d97706;border-radius:8px;padding:10px 14px;font-size:12px;color:#b45309;margin-bottom:16px;text-align:left;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="hearts">✈️ ♥ 🦐</div>
+  <h1>Load Savannah / Charleston Trip</h1>
+  <p>Imports your full trip food log for <strong>April 2–8, 2025</strong> — baseline weight on 4/2, then all meals, sodium estimates, and clinical notes for Thursday 4/3 through Tuesday 4/8. Will not overwrite days you've already logged.</p>
+  <div class="warning">⚠️ No weights were recorded during the trip. Those fields will be left blank so you can fill them in as you go.</div>
+  <button class="btn" id="loadBtn" onclick="loadTrip()">Import trip data</button>
+  <div class="status" id="status"></div>
+  <div class="count" id="count"></div>
+  <div class="detail" id="detail"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'cardiacLog_days';
+
+const TRIP_DAYS = {
+
+  // APRIL 2 — travel day, baseline weight only
+  '2025-04-02': {
+    weightAM: '134.8', weightPrior: '',
+    edema: '', funcStatus: '', symptoms: [],
+    notes: 'Travel day to EWR. Baseline weight 134.8 lb pre-trip. Note: NOT dry weight — steroid belly residual likely still present.',
+    diuretics: [], fluids: [], outputs: [], bms: [],
+    meals: []
+  },
+
+  // APRIL 3 — THURSDAY (EWR → SAV)
+  '2025-04-03': {
+    weightAM: '', weightPrior: '134.8',
+    edema: '', funcStatus: '', symptoms: [],
+    notes: 'Travel day EWR → Savannah GA. High sodium day (~4,200mg). Day total: ~2,050 kcal / ~4,200mg Na. Expected fluid retention 2-4 lbs over next 24-48hrs.',
+    diuretics: [], fluids: [
+      {id:801, oz:'12', name:'Pickle House tomato juice United Airlines full can', nutrition:{kcal:50,sodium_mg:600,carbs_g:10,protein_g:2,fat_g:0}}
+    ], outputs: [], bms: [],
+    meals: [
+      {id:901, name:'Lunch — EWR Nonna\'s', foods:[
+        {fid:9001, name:'2 slices pizza (EWR Nonna\'s)', kcal:'600', sod:'1200', carb:'80', prot:'24', fat:'20'},
+        {fid:9002, name:'Wedge salad with lemon vinaigrette on side', kcal:'200', sod:'300', carb:'12', prot:'6', fat:'14'},
+      ]},
+      {id:902, name:'Dinner — Flying Monk Noodle Bar SAV', foods:[
+        {fid:9003, name:'Pad Thai (Flying Monk SAV)', kcal:'900', sod:'1500', carb:'110', prot:'28', fat:'30'},
+        {fid:9004, name:'Fried vegetable dumplings (Flying Monk SAV)', kcal:'300', sod:'600', carb:'36', prot:'8', fat:'12'},
+      ]},
+    ]
+  },
+
+  // APRIL 4 — FRIDAY
+  '2025-04-04': {
+    weightAM: '', weightPrior: '',
+    edema: '', funcStatus: '', symptoms: [],
+    notes: 'Savannah + Jekyll Island day. High sodium day (~3,120mg). Day total: ~2,400 kcal / ~3,120mg Na.',
+    diuretics: [], fluids: [
+      {id:801, oz:'16', name:'Savannah Sweet Tea bottle', nutrition:{kcal:150,sodium_mg:50,carbs_g:38,protein_g:0,fat_g:0}},
+      {id:802, oz:'8', name:'Cranberry and club soda with lime', nutrition:{kcal:100,sodium_mg:20,carbs_g:24,protein_g:0,fat_g:0}},
+    ], outputs: [], bms: [],
+    meals: [
+      {id:901, name:'Breakfast — Hyatt Regency SAV', foods:[
+        {fid:9001, name:'3 slices toast with butter', kcal:'450', sod:'500', carb:'54', prot:'9', fat:'18'},
+        {fid:9002, name:'Fresh fruit', kcal:'100', sod:'0', carb:'25', prot:'1', fat:'0'},
+      ]},
+      {id:902, name:'Lunch — Corridor Z Kitchen Jekyll Island', foods:[
+        {fid:9003, name:'Garden salad no egg with honey vinaigrette', kcal:'250', sod:'300', carb:'20', prot:'4', fat:'14'},
+        {fid:9004, name:'A few fries with BBQ sauce', kcal:'300', sod:'400', carb:'42', prot:'4', fat:'12'},
+      ]},
+      {id:903, name:'Snack', foods:[
+        {fid:9005, name:"6 glazed pecans (Buc-ee's)", kcal:'250', sod:'50', carb:'18', prot:'3', fat:'18'},
+      ]},
+      {id:904, name:'Dinner — The Pirates House SAV', foods:[
+        {fid:9006, name:'Chicken gumbo (Pirates House)', kcal:'300', sod:'1000', carb:'28', prot:'22', fat:'10'},
+        {fid:9007, name:'2 biscuits with honey butter and orange marmalade', kcal:'500', sod:'800', carb:'62', prot:'8', fat:'22'},
+      ]},
+    ]
+  },
+
+  // APRIL 5 — SATURDAY
+  '2025-04-05': {
+    weightAM: '', weightPrior: '',
+    edema: '', funcStatus: '', symptoms: [],
+    notes: 'Savannah day. Highest sodium day of trip (~4,560mg). Day total: ~2,480 kcal / ~4,560mg Na. Annie O\'s Kitchen dinner was high sodium (chicken strips + mac + baked beans).',
+    diuretics: [], fluids: [
+      {id:801, oz:'8', name:'Pink lemonade 1/2 glass (Vinnie\'s Van Go Go)', nutrition:{kcal:80,sodium_mg:10,carbs_g:21,protein_g:0,fat_g:0}},
+      {id:802, oz:'16', name:'Sweet tea (Annie O\'s Kitchen)', nutrition:{kcal:150,sodium_mg:50,carbs_g:38,protein_g:0,fat_g:0}},
+    ], outputs: [], bms: [],
+    meals: [
+      {id:901, name:'Breakfast — Hyatt Regency SAV room service', foods:[
+        {fid:9001, name:'2 slices bacon', kcal:'100', sod:'300', carb:'0', prot:'7', fat:'8'},
+        {fid:9002, name:'Toast with butter', kcal:'300', sod:'400', carb:'36', prot:'6', fat:'14'},
+      ]},
+      {id:902, name:"Lunch — Vinnie's Van Go Go SAV", foods:[
+        {fid:9003, name:'1 plain pizza slice with green olives and black olives', kcal:'350', sod:'800', carb:'42', prot:'14', fat:'14'},
+        {fid:9004, name:'6 mini Byrd cookies', kcal:'150', sod:'100', carb:'22', prot:'2', fat:'6'},
+      ]},
+      {id:903, name:"Dinner — Annie O's Kitchen", foods:[
+        {fid:9005, name:'Jumbo chicken strips', kcal:'600', sod:'1200', carb:'32', prot:'42', fat:'24'},
+        {fid:9006, name:'BBQ sauce side', kcal:'150', sod:'300', carb:'34', prot:'1', fat:'1'},
+        {fid:9007, name:'Mac and cheese side', kcal:'400', sod:'800', carb:'48', prot:'14', fat:'18'},
+        {fid:9008, name:'Baked beans side', kcal:'200', sod:'600', carb:'38', prot:'8', fat:'2'},
+      ]},
+    ]
+  },
+
+  // APRIL 6 — SUNDAY
+  '2025-04-06': {
+    weightAM: '', weightPrior: '',
+    edema: '', funcStatus: '', symptoms: [],
+    notes: 'Hilton Head day. Highest calorie day of trip (~3,660 kcal / ~5,010mg Na). Large dinner at Ombra Italian + dessert. Caribbean chicken lunch was substantial. Expected 2-4 lb fluid retention impact.',
+    diuretics: [], fluids: [
+      {id:801, oz:'4', name:'Apple juice 1/2 glass (Gringo\'s Diner)', nutrition:{kcal:60,sodium_mg:10,carbs_g:15,protein_g:0,fat_g:0}},
+      {id:802, oz:'8', name:'Cranberry club soda with lime (Sandbar)', nutrition:{kcal:100,sodium_mg:20,carbs_g:24,protein_g:0,fat_g:0}},
+      {id:803, oz:'8', name:'Ginger Ale (Ombra Italian)', nutrition:{kcal:80,sodium_mg:25,carbs_g:21,protein_g:0,fat_g:0}},
+    ], outputs: [], bms: [],
+    meals: [
+      {id:901, name:"Breakfast — Gringo's Diner Hilton Head", foods:[
+        {fid:9001, name:"3 silver dollar chocolate chip pancakes with Smucker's maple syrup", kcal:'400', sod:'500', carb:'60', prot:'8', fat:'12'},
+      ]},
+      {id:902, name:'Lunch — The Sandbar Colony Plaza', foods:[
+        {fid:9002, name:'1/2 soft pretzel appetizer with beer cheese', kcal:'400', sod:'900', carb:'52', prot:'12', fat:'16'},
+      ]},
+      {id:903, name:'Lunch main — The Sandbar', foods:[
+        {fid:9003, name:'Caribbean chicken — 1.25 organic chicken breasts grilled with Caribbean sweet/sour sauce, jasmine rice, fries, ketchup, homemade mango salsa', kcal:'1000', sod:'1500', carb:'110', prot:'52', fat:'28'},
+      ]},
+      {id:904, name:'Dinner — Ombra Italian Hilton Head', foods:[
+        {fid:9004, name:'Panzanella alla Toscana — fresh tomatoes, cucumber, red onion, crusty bread salad, olive oil, Parmigiano', kcal:'300', sod:'400', carb:'28', prot:'8', fat:'16'},
+        {fid:9005, name:'2 slices focaccia with EVOO dip', kcal:'300', sod:'300', carb:'36', prot:'6', fat:'14'},
+        {fid:9006, name:'Fusilli alla Puttanesca — homemade fusilli, cherry tomatoes, black olives, capers, garlic, white wine, tomato sauce', kcal:'800', sod:'1200', carb:'96', prot:'22', fat:'24'},
+      ]},
+      {id:905, name:'Dessert', foods:[
+        {fid:9007, name:'Turoni birthday cake chocolate slice', kcal:'400', sod:'200', carb:'56', prot:'6', fat:'18'},
+      ]},
+    ]
+  },
+
+  // APRIL 7 — MONDAY
+  '2025-04-07': {
+    weightAM: '', weightPrior: '',
+    edema: '', funcStatus: '', symptoms: [],
+    notes: 'Hilton Head → Charleston day. Day total: ~2,120 kcal / ~4,060mg Na. O-Ku sushi dinner high sodium from miso + soy. Pepper Palace samples minimal.',
+    diuretics: [], fluids: [
+      {id:801, oz:'8', name:'Gold Peak sweet tea small fountain (Tide Me Over Disney HH)', nutrition:{kcal:150,sodium_mg:50,carbs_g:38,protein_g:0,fat_g:0}},
+      {id:802, oz:'8', name:'Freshly squeezed lemonade Charleston N Market', nutrition:{kcal:120,sodium_mg:10,carbs_g:30,protein_g:0,fat_g:0}},
+      {id:803, oz:'8', name:'Cranberry club soda (O-Ku Sushi)', nutrition:{kcal:80,sodium_mg:20,carbs_g:20,protein_g:0,fat_g:0}},
+    ], outputs: [], bms: [],
+    meals: [
+      {id:901, name:'Breakfast — Tide Me Over Disney Hilton Head', foods:[
+        {fid:9001, name:"Mickey waffle hollowed out with Smucker's syrup", kcal:'400', sod:'500', carb:'58', prot:'8', fat:'12'},
+        {fid:9002, name:'2 slices bacon', kcal:'100', sod:'300', carb:'0', prot:'7', fat:'8'},
+      ]},
+      {id:902, name:'Lunch — Magnolia Plantation Charleston Peacock Cafe', foods:[
+        {fid:9003, name:'Turkey BLT (1/4 eaten)', kcal:'200', sod:'400', carb:'18', prot:'12', fat:'8'},
+        {fid:9004, name:'Carolina BBQ chips 3/4 bag', kcal:'300', sod:'400', carb:'38', prot:'4', fat:'14'},
+        {fid:9005, name:'1T Pepper Palace various samples', kcal:'15', sod:'80', carb:'3', prot:'0', fat:'0'},
+      ]},
+      {id:903, name:'Dinner — O-Ku Sushi Charleston', foods:[
+        {fid:9006, name:'Sunomono salad (O-Ku)', kcal:'100', sod:'300', carb:'16', prot:'4', fat:'2'},
+        {fid:9007, name:'Miso soup (O-Ku)', kcal:'50', sod:'800', carb:'6', prot:'4', fat:'2'},
+        {fid:9008, name:'1/2 spicy salmon roll + 1/2 eel fortune roll + 1/2 sweet potato roll (O-Ku)', kcal:'500', sod:'1200', carb:'72', prot:'20', fat:'14'},
+      ]},
+    ]
+  },
+
+  // APRIL 8 — TUESDAY (last day / travel home)
+  '2025-04-08': {
+    weightAM: '', weightPrior: '',
+    edema: '', funcStatus: '', symptoms: [],
+    notes: 'Last trip day / travel home. Kiss Cafe breakfast (best bagels in SC). Rodney Scott\'s BBQ lunch. Light dinner at Burger King. Day totals not fully estimated but moderate-high sodium day. Begin low sodium reset protocol tomorrow.',
+    diuretics: [], fluids: [
+      {id:801, oz:'12', name:'Small Coca-Cola fountain (Rodney Scott\'s BBQ)', nutrition:{kcal:140,sodium_mg:45,carbs_g:38,protein_g:0,fat_g:0}},
+    ], outputs: [], bms: [],
+    meals: [
+      {id:901, name:'Breakfast — Kiss Cafe Charleston', foods:[
+        {fid:9001, name:'The Long Islander bagel sandwich (Kiss Cafe — best bagels in SC)', kcal:'550', sod:'900', carb:'62', prot:'28', fat:'18'},
+        {fid:9002, name:'Biscuits (Kiss Cafe)', kcal:'350', sod:'500', carb:'44', prot:'8', fat:'16'},
+        {fid:9003, name:'Potatoes (Kiss Cafe)', kcal:'200', sod:'300', carb:'38', prot:'4', fat:'6'},
+      ]},
+      {id:902, name:"Lunch — Rodney Scott's BBQ Charleston", foods:[
+        {fid:9004, name:"Rodney Scott's BBQ — 2.5 chicken tenders + few bites mac & cheese + 1/4 cornbread + 1-2T BBQ sauce", kcal:'650', sod:'1100', carb:'52', prot:'38', fat:'22'},
+      ]},
+      {id:903, name:'Snack', foods:[
+        {fid:9005, name:'1/2 single scoop River Street sweet peach gelato', kcal:'120', sod:'30', carb:'20', prot:'2', fat:'4'},
+      ]},
+      {id:904, name:'Dinner — travel', foods:[
+        {fid:9006, name:'A few Burger King fries + 2 chicken nuggets', kcal:'250', sod:'450', carb:'34', prot:'8', fat:'10'},
+      ]},
+    ]
+  },
+
+};
+
+function loadTrip() {
+  const btn = document.getElementById('loadBtn');
+  const status = document.getElementById('status');
+  const count = document.getElementById('count');
+  const detail = document.getElementById('detail');
+
+  btn.disabled = true;
+  btn.textContent = 'Importing...';
+  status.textContent = 'Writing to localStorage...';
+
+  try {
+    let existing = {};
+    try { existing = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { existing = {}; }
+
+    let imported = 0, skipped = 0;
+
+    Object.entries(TRIP_DAYS).forEach(([date, day]) => {
+      if (existing[date] && existing[date].weightAM && existing[date].meals && existing[date].meals.length > 0) {
+        skipped++;
+        return;
+      }
+      // Normalize meals to app format
+      const meals = (day.meals || []).map(m => ({
+        id: m.id,
+        name: m.name,
+        foods: (m.foods || []).map(f => ({
+          fid: f.fid,
+          name: f.name,
+          kcal: f.kcal || '0',
+          sod: f.sod || '0',
+          carb: f.carb || '0',
+          prot: f.prot || '0',
+          fat: f.fat || '0'
+        }))
+      }));
+      existing[date] = {
+        weightAM: day.weightAM || '',
+        weightPrior: day.weightPrior || '',
+        edema: day.edema || '',
+        funcStatus: day.funcStatus || '',
+        symptoms: day.symptoms || [],
+        notes: day.notes || '',
+        diuretics: (day.diuretics || []).map(d => ({time: d.time, name: d.name})),
+        fluids: (day.fluids || []).map(f => ({id: f.id, oz: f.oz, name: f.name, nutrition: f.nutrition || null})),
+        outputs: (day.outputs || []).map((o, i) => ({id: 700+i, time: o.time, vol: o.vol})),
+        bms: (day.bms || []).map((b, i) => ({id: 600+i, time: b.time || b})),
+        meals
+      };
+      imported++;
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+
+    const total = Object.keys(existing).length;
+    const sorted = Object.keys(existing).sort();
+    btn.textContent = '✓ Done!';
+    btn.classList.add('done');
+    btn.disabled = false;
+    status.textContent = 'Trip data imported successfully.';
+    count.textContent = `${imported} days imported. ${skipped > 0 ? skipped + ' skipped (already had data).' : ''}`;
+    detail.textContent = `Your log now spans ${sorted[0]} through ${sorted[sorted.length-1]} — ${total} total days.`;
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Import trip data';
+    status.textContent = 'Error: ' + e.message;
+    console.error(e);
+  }
+}
+</script>
+</body>
+</html>
