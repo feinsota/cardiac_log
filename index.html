@@ -20,7 +20,7 @@
 <!-- iOS install hint — shown only in Safari when not already installed as PWA -->
 <div id="installHint" class="install-hint" style="display:none;">
   <img src="heart-mascot.png" class="install-hint-icon" alt="">
-  <span>Tap <strong>Share →</strong> then <strong>Add to Home Screen</strong> for the best experience</span>
+  <span>Tap <strong>Share →</strong> then <strong>Add to Home Screen</strong> · <strong>Export a backup</strong> before removing the app</span>
   <button onclick="document.getElementById('installHint').style.display='none'" class="install-hint-close">✕</button>
 </div>
 
@@ -103,7 +103,7 @@
 
       <!-- Data import buttons -->
       <div class="import-btns">
-        <button id="importHistoryBtn" onclick="runBuiltInImport()" class="import-btn">♥ Load weight history (Sep 2024 – Mar 2025)</button>
+        <button id="importHistoryBtn" onclick="runBuiltInImport()" class="import-btn">♥ Load weight history (Sep 2024 – Apr 2025)</button>
         <button id="importTripBtn" onclick="runTripImport()" class="import-btn">✈️ Load Savannah / Charleston trip (Apr 2–8)</button>
       </div>
 
@@ -385,6 +385,27 @@
           <input type="file" accept="image/*,.pdf" id="labImageUpload" style="display:none;" onchange="handleLabUpload(this)">
         </div>
         <div id="labParseResult" style="display:none;margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <!-- Data Backup & Restore -->
+    <div class="section" style="border-color:var(--primary);background:var(--primary-light);">
+      <div class="section-title" style="color:var(--primary);">
+        <span class="section-title-left">💾 Data Backup &amp; Restore</span>
+      </div>
+      <p style="font-size:12.5px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+        Export all your logged data to a JSON file and save it to iCloud Drive or Files. 
+        If you ever lose data, import the file to restore everything instantly.
+        <strong style="color:var(--alert);"> Back up before deleting the app from your home screen.</strong>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button onclick="exportBackup()" style="background:var(--primary);color:white;border:none;border-radius:var(--radius-sm);padding:12px 16px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;">
+          📥 Export backup (.json)
+        </button>
+        <label style="background:var(--surface);color:var(--primary);border:1.5px solid var(--primary);border-radius:var(--radius-sm);padding:11px 16px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;">
+          📤 Restore from backup
+          <input type="file" accept=".json" style="display:none;" onchange="importBackup(this)">
+        </label>
       </div>
     </div>
 

@@ -1613,6 +1613,17 @@ const HISTORY_WEIGHT=[
   ['2025-01-01',148.4,'Hydrocortisone 15mg daily.'],['2025-01-02',148.6,''],['2025-01-03',149.0,'Hydrocortisone 15mg AM / 5mg PM.'],['2025-01-04',149.2,''],['2025-01-05',148.6,''],['2025-01-06',148.0,''],['2025-01-07',147.8,'Torsemide 100mg.'],['2025-01-08',147.8,''],['2025-01-09',148.0,''],['2025-01-10',148.0,''],['2025-01-11',148.6,''],['2025-01-12',146.4,''],['2025-01-13',146.8,''],['2025-01-14',146.2,''],['2025-01-15',146.6,'Hydrocortisone tapered to 7.5mg AM / 2.5mg PM.'],['2025-01-16',146.6,''],['2025-01-17',146.0,''],['2025-01-18',146.0,''],['2025-01-19',146.0,''],['2025-01-20',146.0,''],['2025-01-21',146.8,''],['2025-01-22',146.0,''],['2025-01-23',147.0,''],['2025-01-24',147.4,'Hydrocortisone down to 5mg daily.'],['2025-01-25',146.0,''],['2025-01-26',144.6,''],['2025-01-27',144.4,'Last dose of hydrocortisone. Steroid course ended.'],['2025-01-28',144.6,''],['2025-01-29',144.8,''],['2025-01-30',144.4,'TSH 7.27. Levo reduced to 88mcg 6 days/wk.'],['2025-01-31',144.6,''],
   ['2025-02-01',142.8,''],['2025-02-02',143.2,''],['2025-02-03',142.4,''],['2025-02-04',142.2,''],['2025-02-05',142.8,''],['2025-02-06',142.2,''],['2025-02-07',142.4,''],['2025-02-08',141.4,''],['2025-02-09',142.2,''],['2025-02-10',142.4,''],['2025-02-11',142.4,''],['2025-02-12',143.4,''],['2025-02-13',142.4,'TSH 9.93. Levo increased to 88mcg daily.'],['2025-02-14',142.2,''],['2025-02-15',143.2,''],['2025-02-16',143.2,''],['2025-02-17',142.4,''],['2025-02-18',142.2,''],['2025-02-19',142.0,''],['2025-02-20',142.0,''],['2025-02-21',141.8,''],['2025-02-22',141.2,''],['2025-02-23',140.8,''],['2025-02-24',141.2,''],['2025-02-25',140.8,''],['2025-02-26',140.6,''],['2025-02-27',140.8,''],['2025-02-28',140.2,''],
   ['2025-03-01',140.4,''],['2025-03-02',140.0,''],['2025-03-03',140.6,''],['2025-03-04',139.6,''],['2025-03-05',139.4,''],
+  // Recovered from Apple Health — March 6 – April 15 2025
+  ['2025-03-06',138.8,''],['2025-03-07',138.6,''],['2025-03-08',138.8,''],['2025-03-09',138.2,''],['2025-03-10',138.2,''],
+  ['2025-03-11',137.8,''],['2025-03-12',138.0,''],['2025-03-13',137.6,''],['2025-03-14',137.6,''],['2025-03-15',137.2,''],
+  ['2025-03-16',137.0,''],['2025-03-17',136.6,''],['2025-03-18',137.2,''],['2025-03-19',136.4,''],['2025-03-20',136.6,''],
+  ['2025-03-21',136.6,''],['2025-03-22',136.4,'Torsemide 80mg.'],['2025-03-23',138.0,'Torsemide 80mg.'],
+  ['2025-03-24',135.0,'Torsemide 100mg for day.'],['2025-03-25',135.2,'Torsemide 40mg eve.'],
+  ['2025-03-26',134.8,'Torsemide 40mg eve.'],['2025-03-27',135.6,'Torsemide 50mg eve.'],
+  ['2025-03-28',135.0,''],['2025-03-29',134.6,''],['2025-03-30',135.0,''],['2025-03-31',135.2,''],
+  ['2025-04-01',134.2,''],['2025-04-02',134.8,'Pre-trip baseline. Travel day EWR.'],
+  ['2025-04-09',137.0,'Post-trip.'],['2025-04-10',136.6,''],['2025-04-11',136.4,''],
+  ['2025-04-12',135.6,''],['2025-04-13',135.2,''],['2025-04-14',134.4,''],['2025-04-15',133.4,''],
 ];
 
 function runBuiltInImport(){
@@ -1704,3 +1715,93 @@ window.addEventListener('resize',drawWeightChart);
   const tBtn=document.getElementById('importTripBtn');
   if(hasTrip&&tBtn){tBtn.textContent='Trip loaded ✓';tBtn.disabled=true;tBtn.className='import-btn done';}
 })();
+
+// ════════════════════════════════════════════════════════════════════════
+// BACKUP & RESTORE — export/import all localStorage data
+// ════════════════════════════════════════════════════════════════════════
+
+function exportBackup(){
+  const backup={
+    version:1,
+    exported:new Date().toISOString(),
+    cardiacLog_days:JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'),
+    cardiacLog_favorites:JSON.parse(localStorage.getItem(FAV_KEY)||'[]'),
+  };
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const now=new Date();
+  const yr=now.getFullYear();
+  const mo=String(now.getMonth()+1).padStart(2,'0');
+  const dy=String(now.getDate()).padStart(2,'0');
+  const hr=String(now.getHours()).padStart(2,'0');
+  const mn=String(now.getMinutes()).padStart(2,'0');
+  a.href=url;
+  a.download=`cardiac-log-backup-${yr}-${mo}-${dy}-${hr}${mn}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  // Show confirmation toast
+  showToast('✓ Backup downloaded — save to iCloud Drive or Files');
+}
+
+function importBackup(input){
+  const file=input.files[0];
+  if(!file){return;}
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      // Validate
+      if(!backup.cardiacLog_days){
+        alert('Invalid backup file — does not contain cardiac log data.');
+        input.value='';
+        return;
+      }
+      // Count days
+      const dayCount=Object.keys(backup.cardiacLog_days).length;
+      const favCount=(backup.cardiacLog_favorites||[]).length;
+      // Confirm before overwriting
+      const exportDate=backup.exported?new Date(backup.exported).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}):'unknown date';
+      const ok=confirm(`Restore backup from ${exportDate}?\n\nThis will restore:\n• ${dayCount} days of logged data\n• ${favCount} saved favorites\n\nYour current data will be replaced. This cannot be undone.`);
+      if(!ok){input.value='';return;}
+      // Restore
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(backup.cardiacLog_days));
+      if(backup.cardiacLog_favorites){
+        localStorage.setItem(FAV_KEY,JSON.stringify(backup.cardiacLog_favorites));
+      }
+      input.value='';
+      // Reload
+      loadDay(currentDate);
+      drawWeightChart();
+      updateProgressTab();
+      showToast(`✓ Restored ${dayCount} days of data`);
+      // Re-check import buttons
+      checkImportsLoaded2();
+    }catch(err){
+      alert('Could not read backup file. Make sure it is a valid cardiac log backup JSON.');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:white;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.18);white-space:nowrap;max-width:90vw;text-align:center;';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3200);
+}
+
+function checkImportsLoaded2(){
+  const all=getAllDays();
+  const hasHistory=Object.keys(all).some(d=>d<'2025-01-01');
+  const hBtn=document.getElementById('importHistoryBtn');
+  if(hasHistory&&hBtn){hBtn.textContent='History loaded ✓';hBtn.disabled=true;hBtn.className='import-btn done';}
+  const hasTrip=all['2025-04-03']&&all['2025-04-03'].meals&&all['2025-04-03'].meals.length>0;
+  const tBtn=document.getElementById('importTripBtn');
+  if(hasTrip&&tBtn){tBtn.textContent='Trip loaded ✓';tBtn.disabled=true;tBtn.className='import-btn done';}
+}
