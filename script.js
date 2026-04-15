@@ -1655,6 +1655,318 @@ const TRIP_DAYS={
   '2025-04-08':{weightAM:'',weightPrior:'',notes:"Last trip day / travel home. Kiss Cafe breakfast (best bagels in SC). Rodney Scott's BBQ lunch. Light dinner travel. Begin low Na reset tomorrow.",diuretics:[],fluids:[{id:801,oz:'12',name:"Coca-Cola small fountain Rodney Scott's",nutrition:{kcal:140,sodium_mg:45,carbs_g:38,protein_g:0,fat_g:0}}],outputs:[],bms:[],meals:[{id:901,name:'Breakfast — Kiss Cafe Charleston',foods:[{fid:9001,name:'The Long Islander bagel sandwich (Kiss Cafe)',kcal:'550',sod:'900',carb:'62',prot:'28',fat:'18'},{fid:9002,name:'Biscuits (Kiss Cafe)',kcal:'350',sod:'500',carb:'44',prot:'8',fat:'16'},{fid:9003,name:'Potatoes (Kiss Cafe)',kcal:'200',sod:'300',carb:'38',prot:'4',fat:'6'}]},{id:902,name:"Lunch — Rodney Scott's BBQ",foods:[{fid:9004,name:"Rodney Scott's — 2.5 chicken tenders + few bites mac & cheese + 1/4 cornbread + 1-2T BBQ sauce",kcal:'650',sod:'1100',carb:'52',prot:'38',fat:'22'}]},{id:903,name:'Snack',foods:[{fid:9005,name:'1/2 scoop River Street sweet peach gelato',kcal:'120',sod:'30',carb:'20',prot:'2',fat:'4'}]},{id:904,name:'Dinner — travel',foods:[{fid:9006,name:'Few BK fries + 2 chicken nuggets',kcal:'250',sod:'450',carb:'34',prot:'8',fat:'10'}]}]},
 };
 
+// ════════════════════════════════════════════════════════════════════════
+// RECOVERED DAILY LOGS — from Apple Notes
+// Mar 7 – Apr 1 + select earlier dates (Feb, Nov)
+// Baked in permanently so they survive any localStorage wipe
+// ════════════════════════════════════════════════════════════════════════
+const RECOVERED_DAYS={
+  '2025-03-30':{weightAM:'135',weightPrior:'134.6',notes:'Legs heavy AM. Torsemide 50mg 8:33pm. Low sodium day ~1,380-1,480mg.',
+    diuretics:[{time:'20:33',drug:'Torsemide',dose:'50'}],
+    fluids:[{oz:'12',name:'Water (6AM)'},{oz:'4',name:'Water (3AM)'},{oz:'6',name:'Water'},{oz:'12',name:'Honest Kids Fruit Punch',nutrition:{kcal:35,sodium_mg:10,carbs_g:9,protein_g:0,fat_g:0}},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'12',name:'Sprite Tea',nutrition:{kcal:90,sodium_mg:30,carbs_g:22,protein_g:0,fat_g:0}},{oz:'6',name:'Water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'}],
+    outputs:[{time:'03:00',vol:'150'},{time:'05:00',vol:'150'},{time:'07:44',vol:'150'},{time:'12:19',vol:'150'},{time:'16:34',vol:'150'},{time:'18:33',vol:'150'},{time:'21:59',vol:'300'},{time:'22:40',vol:'300'}],
+    bms:[{time:'12:00'}],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Strathgarry Cold Smoked Scottish Salmon + 16 red grapes',kcal:'120',sod:'480',carb:'16',prot:'12',fat:'3'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'Lunch (logged)',kcal:'300',sod:'660',carb:'30',prot:'19',fat:'5'}]},
+      {id:3,name:'Snack',foods:[{fid:3,name:'Rice Krispy Treat homestyle original',kcal:'130',sod:'135',carb:'26',prot:'1',fat:'3'}]},
+      {id:4,name:'Dinner',foods:[{fid:4,name:'Homemade thin crust pizza (1/2 WF crust, DeLallo sauce, mozzarella, 3 Creminelli pepperoni)',kcal:'225',sod:'470',carb:'25',prot:'12',fat:'10'}]},
+      {id:5,name:'Dessert',foods:[{fid:5,name:'1 Cadbury egg',kcal:'150',sod:'25',carb:'20',prot:'2',fat:'6'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-29':{weightAM:'134.6',weightPrior:'135',notes:'Severe fatigue/hypersomnolence, slept until noon, nap 2:15-4:15pm. Cold intolerance. Recent levo dose adjustment. Na 1,635mg — above target.',
+    symptoms:['Fatigue','Increased thirst'],
+    diuretics:[{time:'20:08',drug:'Torsemide',dose:'50'}],
+    fluids:[{oz:'60',name:'Water (total)'},{oz:'16',name:'Orange juice',nutrition:{kcal:210,sodium_mg:10,carbs_g:50,protein_g:3,fat_g:0}},{oz:'7.5',name:'Sprite',nutrition:{kcal:90,sodium_mg:30,carbs_g:24,protein_g:0,fat_g:0}}],
+    outputs:[{time:'12:19',vol:'300'},{time:'16:22',vol:'300'},{time:'17:52',vol:'150'},{time:'19:03',vol:'300'},{time:'21:02',vol:'300'},{time:'21:52',vol:'300'},{time:'22:26',vol:'300'}],
+    bms:[{time:'12:00'}],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Quaker Chewy 25% Less Sugar Choc Chip Bar',kcal:'100',sod:'90',carb:'18',prot:'2',fat:'3'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'Turkey Sub + Egg Noodle Soup',kcal:'540',sod:'730',carb:'65',prot:'28',fat:'14'}]},
+      {id:3,name:'Snack',foods:[{fid:3,name:'20 seedless red grapes',kcal:'70',sod:'0',carb:'18',prot:'1',fat:'0'}]},
+      {id:4,name:'Dinner',foods:[{fid:4,name:'Homemade Yaki Udon (no vegetables)',kcal:'500',sod:'645',carb:'70',prot:'10',fat:'22'}]},
+      {id:5,name:'Dessert',foods:[{fid:5,name:'Oat Milk Vanilla Drink',kcal:'180',sod:'170',carb:'19',prot:'3',fat:'9'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-28':{weightAM:'135',weightPrior:'135.6',notes:'Heavy feeling legs AM. Low intake day. Torsemide 50mg 7:45pm.',
+    symptoms:['Fatigue'],
+    diuretics:[{time:'19:45',drug:'Torsemide',dose:'50'}],
+    fluids:[{oz:'6',name:'Honest Kids Fruit Punch',nutrition:{kcal:35,sodium_mg:10,carbs_g:9,protein_g:0,fat_g:0}},{oz:'6',name:'Honest Kids Fruit Punch',nutrition:{kcal:35,sodium_mg:10,carbs_g:9,protein_g:0,fat_g:0}},{oz:'8',name:'Water'},{oz:'4',name:'Water'},{oz:'4',name:'Water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'7.5',name:'Sprite',nutrition:{kcal:90,sodium_mg:30,carbs_g:24,protein_g:0,fat_g:0}},{oz:'5',name:'Water'}],
+    outputs:[{time:'01:30',vol:'50'},{time:'03:30',vol:'50'},{time:'08:00',vol:'300'},{time:'09:57',vol:'150'},{time:'13:50',vol:'300'},{time:'16:05',vol:'150'},{time:'19:10',vol:'300'},{time:'20:28',vol:'300'},{time:'21:00',vol:'300'},{time:'21:34',vol:'300'},{time:'22:12',vol:'300'},{time:'23:14',vol:'300'}],
+    bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'2 oz Scottish smoked salmon',kcal:'80',sod:'540',carb:'0',prot:'12',fat:'4'}]},
+      {id:2,name:'Snack',foods:[{fid:2,name:'12 seedless red grapes + 2 cornichon',kcal:'55',sod:'60',carb:'14',prot:'0',fat:'0'}]},
+      {id:3,name:'Lunch',foods:[{fid:3,name:'Chinese steamed chicken w/ mango sauce + white rice + hot & sour soup 3/4 cup',kcal:'400',sod:'600',carb:'55',prot:'28',fat:'8'}]},
+      {id:4,name:'Dinner',foods:[{fid:4,name:'Homemade thin crust pizza — 1/2 WF crust, Botticelli sauce, 365 mozzarella, 3 Creminelli pepperoni',kcal:'300',sod:'550',carb:'30',prot:'14',fat:'12'}]},
+      {id:5,name:'Dessert',foods:[{fid:5,name:'1/2 Cadbury Egg',kcal:'75',sod:'12',carb:'10',prot:'1',fat:'3'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-27':{weightAM:'135.6',weightPrior:'134.8',notes:'Heavy calves bilateral, itchy right leg, ear fullness. Mildly net positive. Torsemide 50mg — suboptimal response. Na ~1,530mg.',
+    symptoms:['Fatigue','Lightheadedness'],
+    diuretics:[{time:'20:15',drug:'Torsemide',dose:'50'}],
+    fluids:[{oz:'16',name:'Water'},{oz:'12',name:'Water'},{oz:'6',name:'Water'},{oz:'4',name:'Water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'}],
+    outputs:[{time:'01:30',vol:'150'},{time:'03:30',vol:'300'},{time:'07:34',vol:'300'},{time:'11:45',vol:'150'},{time:'14:55',vol:'150'},{time:'16:59',vol:'150'},{time:'20:59',vol:'300'},{time:'21:38',vol:'300'},{time:'22:30',vol:'300'},{time:'23:28',vol:'300'}],
+    bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'1/2 plain bagel scooped + 1 tsp cream cheese + 1 oz smoked salmon + Quaker Chewy bar',kcal:'270',sod:'730',carb:'38',prot:'14',fat:'6'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'Homemade low-sodium Rice-A-Roni (rice + egg noodles + Jayuss seasoning)',kcal:'310',sod:'150',carb:'58',prot:'8',fat:'4'}]},
+      {id:3,name:'Dinner',foods:[{fid:3,name:'Steamed chicken w/ mango drizzle + 3 eel cucumber rolls + 1 vegetable gyoza + 1 bite smoked salmon roll + 3T hot & sour soup + 1 spoon white rice',kcal:'620',sod:'700',carb:'72',prot:'30',fat:'18'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-26':{weightAM:'134.8',weightPrior:'135.2',notes:'Heavy legs, reduced thirst — very low intake 44oz. Only 1 void from 40mg Torsemide vs usual 3-4 from 80mg. Na ~865-1,010mg — good day.',
+    symptoms:['Fatigue'],
+    diuretics:[{time:'20:30',drug:'Torsemide',dose:'40'}],
+    fluids:[{oz:'8',name:"Mott's Apple Juice",nutrition:{kcal:120,sodium_mg:15,carbs_g:28,protein_g:0,fat_g:0}},{oz:'16',name:'Water'},{oz:'4',name:'Water'},{oz:'7.5',name:'Sprite',nutrition:{kcal:90,sodium_mg:30,carbs_g:24,protein_g:0,fat_g:0}},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'}],
+    outputs:[{time:'09:25',vol:'300'},{time:'12:43',vol:'150'},{time:'15:45',vol:'150'},{time:'21:51',vol:'300'}],
+    bms:[{time:'12:45'}],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'10 grapes',kcal:'35',sod:'0',carb:'9',prot:'0',fat:'0'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'Homemade turkey sub',kcal:'270',sod:'450',carb:'32',prot:'18',fat:'6'}]},
+      {id:3,name:'Snack',foods:[{fid:3,name:'Popchips Sea Salt 1 bag',kcal:'100',sod:'75',carb:'18',prot:'2',fat:'3'}]},
+      {id:4,name:'Dinner',foods:[{fid:4,name:'2 chicken tenders + 1/2 cup low-sodium chicken rice',kcal:'320',sod:'420',carb:'28',prot:'28',fat:'10'}]},
+      {id:5,name:'Dessert',foods:[{fid:5,name:'1 Cadbury egg',kcal:'150',sod:'25',carb:'20',prot:'2',fat:'6'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-25':{weightAM:'135.2',weightPrior:'135',notes:'Torsemide 40mg 7:35pm. Evening calf heaviness, tummy distended/puffy. Na ~650-800mg — excellent day. Stable to mildly positive.',
+    symptoms:['Fatigue'],
+    diuretics:[{time:'19:35',drug:'Torsemide',dose:'40'}],
+    fluids:[{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'5',name:"Walker's Japanese Sparkling Peach Soda",nutrition:{kcal:40,sodium_mg:10,carbs_g:10,protein_g:0,fat_g:0}},{oz:'6',name:"Mott's Apple Juice",nutrition:{kcal:90,sodium_mg:10,carbs_g:21,protein_g:0,fat_g:0}},{oz:'8',name:'Moshi Sparkling Water Fuji Apple + Concord Grape',nutrition:{kcal:0,sodium_mg:10,carbs_g:0,protein_g:0,fat_g:0}},{oz:'7.5',name:'Sprite',nutrition:{kcal:90,sodium_mg:30,carbs_g:24,protein_g:0,fat_g:0}}],
+    outputs:[{time:'05:30',vol:'300'},{time:'07:40',vol:'150'},{time:'10:26',vol:'300'},{time:'14:50',vol:'300'},{time:'17:50',vol:'150'},{time:'20:55',vol:'300'},{time:'21:42',vol:'300'},{time:'23:10',vol:'150'}],
+    bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Quaker Chewy 25% Less Sugar Choc Chip Bar + 2 Krispy Kreme Glazed Dots',kcal:'200',sod:'120',carb:'36',prot:'3',fat:'6'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'Homemade turkey sub (semolina roll, homemade turkey, dijon, habanero relish, pickle chips)',kcal:'270',sod:'280',carb:'32',prot:'18',fat:'5'}]},
+      {id:3,name:'Snack',foods:[{fid:3,name:'Popchips Sea Salt + 6 black grapes',kcal:'120',sod:'75',carb:'22',prot:'2',fat:'3'}]},
+      {id:4,name:'Dinner',foods:[{fid:4,name:"Spaghetti + 1/4 cup Hunt's No Salt Added Tomato Sauce",kcal:'250',sod:'45',carb:'48',prot:'8',fat:'2'}]},
+      {id:5,name:'Dessert',foods:[{fid:5,name:"1 mini Hershey's + 1/2 cup Friendship No Salt Added Cottage Cheese + 6 grapes",kcal:'140',sod:'80',carb:'14',prot:'10',fat:'5'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-24':{weightAM:'135',weightPrior:'138',notes:'-3.0 lb drop. Torsemide 20mg AM + 80mg PM. Restaurant day at By Antidote — Na ~2,000-2,900mg estimated. Big diuresis day.',
+    diuretics:[{time:'08:10',drug:'Torsemide',dose:'20'},{time:'20:39',drug:'Torsemide',dose:'80'}],
+    fluids:[{oz:'6',name:'Water'},{oz:'10',name:'Water'},{oz:'4',name:'Harney & Sons Organic Peach Iced Tea',nutrition:{kcal:0,sodium_mg:0,carbs_g:0,protein_g:0,fat_g:0}},{oz:'8',name:'Water'},{oz:'4',name:'Water'},{oz:'10',name:'Cranberry/club soda',nutrition:{kcal:50,sodium_mg:20,carbs_g:12,protein_g:0,fat_g:0}},{oz:'16.9',name:'Water'},{oz:'10',name:'Water'},{oz:'4',name:'Water'}],
+    outputs:[{time:'00:15',vol:'300'},{time:'04:30',vol:'300'},{time:'07:30',vol:'300'},{time:'10:06',vol:'300'},{time:'10:30',vol:'150'},{time:'12:45',vol:'300'},{time:'16:00',vol:'300'},{time:'19:52',vol:'300'},{time:'22:08',vol:'700'}],
+    bms:[{time:'10:06'}],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Homemade semolina roll + 1-1.5oz smoked salmon + apple juice bottle',kcal:'270',sod:'510',carb:'55',prot:'13',fat:'4'}]},
+      {id:2,name:'Lunch — By Antidote',foods:[{fid:2,name:'Cucumber salad (5-6 pieces) + 2 scallion pancakes + shredded chicken w/ peppers (~8 pieces) + 3 scoops mustard green fried rice',kcal:'700',sod:'1150',carb:'88',prot:'30',fat:'25'}]},
+      {id:3,name:'Dinner',foods:[{fid:3,name:'Spaghetti 2 small servings + restaurant tomato sauce 1/4 cup + pasta fagioli small portion',kcal:'360',sod:'720',carb:'62',prot:'11',fat:'5'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-23':{weightAM:'138',weightPrior:'136.4',notes:'+1.6 lb. Torsemide 20mg AM + 60mg PM. Restaurant day. Na ~1,000-1,200mg estimated. 2 BMs.',
+    diuretics:[{time:'09:15',drug:'Torsemide',dose:'20'},{time:'20:45',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'7',name:'Water'},{oz:'3',name:'Water'},{oz:'2',name:'Iced Peach Tea',nutrition:{kcal:0,sodium_mg:0,carbs_g:0,protein_g:0,fat_g:0}},{oz:'12',name:'Water'},{oz:'10',name:"Martinelli's Sparkling Apple Juice",nutrition:{kcal:140,sodium_mg:10,carbs_g:34,protein_g:0,fat_g:0}},{oz:'8',name:'Harney & Sons Iced Peach Tea',nutrition:{kcal:0,sodium_mg:0,carbs_g:0,protein_g:0,fat_g:0}},{oz:'8',name:'Water'},{oz:'8',name:'Moshi Asian Sparkling Water',nutrition:{kcal:0,sodium_mg:10,carbs_g:0,protein_g:0,fat_g:0}},{oz:'8',name:'Yuzu Peach Sparkling Water',nutrition:{kcal:0,sodium_mg:10,carbs_g:0,protein_g:0,fat_g:0}},{oz:'6',name:'Water'},{oz:'4',name:'Water'}],
+    outputs:[{time:'04:50',vol:'300'},{time:'08:30',vol:'300'},{time:'11:00',vol:'150'},{time:'13:06',vol:'300'},{time:'17:35',vol:'300'},{time:'21:40',vol:'300'},{time:'22:24',vol:'300'},{time:'23:11',vol:'500'}],
+    bms:[{time:'09:30'},{time:'14:19'}],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Quaker Chewy 25% Less Sugar Choc Chip Bar + 11 black seedless grapes',kcal:'138',sod:'90',carb:'26',prot:'3',fat:'3'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'Homemade turkey sub (low Na bread, homemade turkey, pickles, relish, dijon) + Popchips Sea Salt',kcal:'370',sod:'225',carb:'50',prot:'20',fat:'8'}]},
+      {id:3,name:'Dinner',foods:[{fid:3,name:'WF thin crust pizza 1/3 (Botticelli sauce, WF mozzarella, corn, rotisserie chicken 65mg, 2-3 kalamata olives) + 1/2 cup farfalle + Mia Cucina sauce + ricotta + burrata 1/2',kcal:'580',sod:'780',carb:'68',prot:'26',fat:'22'}]},
+      {id:4,name:'Dessert',foods:[{fid:4,name:'12 black seedless grapes',kcal:'50',sod:'0',carb:'13',prot:'0',fat:'0'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-22':{weightAM:'136.4',weightPrior:'136.6',notes:'Net negative -600mL. Strong diuretic response from 60mg Torsemide — clustered nighttime voids. Heavy legs → resolved overnight. Na ~1,100mg.',
+    diuretics:[{time:'20:00',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'55',name:'Water (total ~1,650mL)'}],
+    outputs:[{time:'07:50',vol:'700'},{time:'10:33',vol:'150'},{time:'11:57',vol:'150'},{time:'13:08',vol:'300'},{time:'15:33',vol:'150'},{time:'21:00',vol:'150'},{time:'22:17',vol:'700'},{time:'23:11',vol:'500'},{time:'23:54',vol:'300'}],
+    bms:[{time:'12:00'}],
+    meals:[
+      {id:1,name:'All meals',foods:[{fid:1,name:'Daily total — logged',kcal:'1000',sod:'1100',carb:'130',prot:'35',fat:'30'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-21':{weightAM:'136.6',weightPrior:'136.6',notes:'Stable weight. Torsemide 20mg AM + 60mg PM. Japanese food lunch.',
+    diuretics:[{time:'08:30',drug:'Torsemide',dose:'20'},{time:'20:06',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'5',name:'Water (3:30am)'},{oz:'5',name:'Water (5:30am)'},{oz:'7',name:'Water'},{oz:'6',name:'Water'},{oz:'6',name:'Honest Kids Super Fruit Punch',nutrition:{kcal:35,sodium_mg:10,carbs_g:9,protein_g:0,fat_g:0}},{oz:'25',name:'Water'},{oz:'10',name:'Water'},{oz:'9',name:'Water'},{oz:'6',name:'Honest Kids Fruit Punch',nutrition:{kcal:35,sodium_mg:10,carbs_g:9,protein_g:0,fat_g:0}}],
+    outputs:[{time:'06:45',vol:'500'},{time:'11:23',vol:'150'},{time:'14:04',vol:'150'},{time:'21:48',vol:'500'}],
+    bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'3 Krispy Kreme Glazed Dots',kcal:'210',sod:'135',carb:'36',prot:'3',fat:'8'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'3 Japanese steamed vegetable dumplings + 5 cucumber seaweed rolls + 1 tsp low-sodium soy sauce',kcal:'265',sod:'476',carb:'38',prot:'10',fat:'5'}]},
+      {id:3,name:'Dinner',foods:[{fid:3,name:'5oz WF Atlantic Wild Cod (breaded matzo/cornmeal) + 1/4 cup tomatillo chili salsa + corn kernels + 18 homemade corn tortilla chips + Crema Mexicana + 1 Siete corn tortilla',kcal:'580',sod:'360',carb:'78',prot:'36',fat:'18'}]},
+      {id:4,name:'Dessert',foods:[{fid:4,name:'2 mini Hershey bars (1 dark, 1 milk)',kcal:'84',sod:'20',carb:'10',prot:'1',fat:'5'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-20':{weightAM:'136.6',weightPrior:'136.4',notes:'+0.2 lb. Torsemide 20mg AM + 60mg PM. Net -83mL — near neutral/negative. Na ~1,130mg. Strong diuretic response overnight.',
+    diuretics:[{time:'08:34',drug:'Torsemide',dose:'20'},{time:'21:03',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'8',name:'Water'},{oz:'10',name:'Evolution OJ',nutrition:{kcal:130,sodium_mg:0,carbs_g:30,protein_g:2,fat_g:0}},{oz:'6',name:'Honest Kids Fruit Punch',nutrition:{kcal:35,sodium_mg:10,carbs_g:9,protein_g:0,fat_g:0}},{oz:'5',name:'Water'},{oz:'8',name:'Water'},{oz:'12',name:'Coke (small)',nutrition:{kcal:140,sodium_mg:45,carbs_g:38,protein_g:0,fat_g:0}},{oz:'10',name:'Water'},{oz:'16.9',name:'Water'},{oz:'8',name:'Water'},{oz:'5',name:'Water'}],
+    outputs:[{time:'10:20',vol:'500'},{time:'11:20',vol:'300'},{time:'14:19',vol:'150'},{time:'15:43',vol:'150'},{time:'18:51',vol:'500'},{time:'22:12',vol:'700'},{time:'22:55',vol:'300'},{time:'23:40',vol:'300'}],
+    bms:[{time:'13:30'},{time:'14:19'}],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Quaker Chewy 25% Less Sugar Choc Chip Bar',kcal:'100',sod:'90',carb:'18',prot:'2',fat:'3'}]},
+      {id:2,name:'Lunch — Wendy\'s',foods:[{fid:2,name:"Wendy's 4pc chicken nuggets + unsalted junior fries + 1 tsp Open Pit BBQ + 1 tbsp ketchup + small Coke",kcal:'450',sod:'640',carb:'58',prot:'18',fat:'16'}]},
+      {id:3,name:'Dinner',foods:[{fid:3,name:'Black seedless grapes + 3/4 cup farfalle + Kerrygold butter + Mia Cucina tomato sauce + Galbani ricotta + Flora Parm/Asiago shake',kcal:'520',sod:'370',carb:'78',prot:'16',fat:'14'}]},
+      {id:4,name:'Dessert',foods:[{fid:4,name:"Outshine Grape Pop 1/8 + Hershey's dark mini + Hershey's milk mini",kcal:'150',sod:'30',carb:'22',prot:'2',fat:'6'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:'Levothyroxine 75mcg at 7:40pm; Torsemide 20mg 8:34am + 60mg 9:03pm; K 100mEq; Eplerenone 150mg'}},
+
+  '2025-03-15':{weightAM:'137.2',weightPrior:'137.6',notes:'Torsemide 20mg 9AM + 60mg 8:26pm. Pizza lunch + simple dinner.',
+    diuretics:[{time:'09:00',drug:'Torsemide',dose:'20'},{time:'20:26',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'8',name:'Water'},{oz:'4',name:"Mott's Apple Juice",nutrition:{kcal:60,sodium_mg:10,carbs_g:14,protein_g:0,fat_g:0}},{oz:'8',name:'Evolution OJ',nutrition:{kcal:130,sodium_mg:0,carbs_g:30,protein_g:2,fat_g:0}},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'7.5',name:'Sprite',nutrition:{kcal:90,sodium_mg:30,carbs_g:24,protein_g:0,fat_g:0}},{oz:'7.5',name:'Ginger Ale',nutrition:{kcal:80,sodium_mg:25,carbs_g:21,protein_g:0,fat_g:0}},{oz:'8',name:'Gatorade Electrolyte Water'},{oz:'6',name:'Water'},{oz:'8',name:'Water'}],
+    outputs:[{time:'07:00',vol:'500'},{time:'10:00',vol:'150'},{time:'12:00',vol:'700'},{time:'14:30',vol:'500'},{time:'17:28',vol:'300'},{time:'20:26',vol:'300'}],
+    bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'1 oz smoked salmon with lemon juice',kcal:'40',sod:'540',carb:'0',prot:'6',fat:'2'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'75% WF Organic Thin & Crispy Pizza (50g crust, Botticelli sauce, 365 cheese)',kcal:'280',sod:'350',carb:'38',prot:'12',fat:'8'}]},
+      {id:3,name:'Dinner',foods:[{fid:3,name:"1/16 Nature's Promise sesame bread + 1T WF unsalted PB + 1 slice no-salt turkey Boar's Head + 60% Simply Asia sesame teriyaki noodles (50% sauce)",kcal:'380',sod:'480',carb:'52',prot:'18',fat:'12'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-14':{weightAM:'137.6',weightPrior:'137.6',notes:'Torsemide 60mg 7:42pm + 40mEq K. 4 voids overnight.',
+    diuretics:[{time:'19:42',drug:'Torsemide',dose:'60'}],
+    fluids:[],outputs:[{time:'20:34',vol:'150'},{time:'21:39',vol:'150'},{time:'22:43',vol:'700'},{time:'23:36',vol:'500'}],
+    bms:[],meals:[],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:'KCl 40mEq'}},
+
+  '2025-03-11':{weightAM:'137.8',weightPrior:'138',notes:'Torsemide 70mg 8:05pm + 40mEq K. 4 strong voids post-diuretic.',
+    diuretics:[{time:'20:05',drug:'Torsemide',dose:'70'}],
+    fluids:[],outputs:[{time:'21:05',vol:'500'},{time:'21:41',vol:'500'},{time:'22:12',vol:'500'},{time:'22:42',vol:'500'}],
+    bms:[],meals:[],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:'KCl 40mEq'}},
+
+  '2025-03-10':{weightAM:'138.2',weightPrior:'138.2',notes:'Torsemide 80mg 8pm. 3 medium voids post-diuretic.',
+    diuretics:[{time:'20:00',drug:'Torsemide',dose:'80'}],
+    fluids:[],outputs:[{time:'21:07',vol:'300'},{time:'21:59',vol:'300'},{time:'22:37',vol:'150'}],
+    bms:[],meals:[],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2025-03-07':{weightAM:'138.6',weightPrior:'138.8',notes:'Torsemide 80mg 8:23pm + 100mEq K. 1 large void.',
+    diuretics:[{time:'20:23',drug:'Torsemide',dose:'80'}],
+    fluids:[],outputs:[{time:'21:40',vol:'700'}],
+    bms:[],meals:[],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:'KCl 100mEq'}},
+
+  '2025-03-05':{weightAM:'139.4',weightPrior:'139.6',notes:'Torsemide 60mg 8:10pm + 40mEq K.',
+    diuretics:[{time:'20:10',drug:'Torsemide',dose:'60'}],
+    fluids:[],outputs:[],bms:[],meals:[],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:'KCl 40mEq'}},
+
+  '2025-03-01':{weightAM:'140.4',weightPrior:'140.0',notes:'Torsemide 20mg AM + 60mg PM. KCl 100mEq. Wendy\'s unsalted fries for lunch.',
+    diuretics:[{time:'08:00',drug:'Torsemide',dose:'20'},{time:'20:00',drug:'Torsemide',dose:'60'}],
+    fluids:[],outputs:[],bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Stonyfield Organic Lowfat Vanilla Yogurt + Nature Valley Vanilla Almond Reduced Sugar Granola',kcal:'280',sod:'120',carb:'40',prot:'10',fat:'6'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:"Primos 2.5oz Oven Roasted Turkey + Wendy's unsalted junior fries + Hunt's ketchup",kcal:'380',sod:'720',carb:'52',prot:'22',fat:'10'}]},
+      {id:3,name:'Dinner',foods:[{fid:3,name:'Local diner chicken stir fry sauce on side no added salt + small chicken soup',kcal:'380',sod:'400',carb:'38',prot:'32',fat:'10'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:'KCl 100mEq'}},
+
+  '2026-02-05':{weightAM:'142.2',weightPrior:'142.8',notes:'Kura Sushi dinner — miso soup 75% (690mg Na full), caterpillar rolls, spicy salmon roll. AM Torsemide 20mg + PM 80mg.',
+    diuretics:[{time:'07:15',drug:'Torsemide',dose:'20'},{time:'21:15',drug:'Torsemide',dose:'80'}],
+    fluids:[{oz:'12',name:'OJ',nutrition:{kcal:165,sodium_mg:0,carbs_g:39,protein_g:3,fat_g:0}},{oz:'6',name:'Homemade apple juice',nutrition:{kcal:80,sodium_mg:0,carbs_g:20,protein_g:0,fat_g:0}},{oz:'6',name:'Water'},{oz:'6',name:'Water'},{oz:'10',name:'Water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'}],
+    outputs:[],bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'2 pieces bacon from diner (rendered) + 1/4 buttered Kaiser roll',kcal:'220',sod:'420',carb:'12',prot:'8',fat:'14'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'1.5 cup low-sodium Kettle & Fire veggie broth + 1/2 cup jasmine rice',kcal:'185',sod:'270',carb:'40',prot:'4',fat:'1'}]},
+      {id:3,name:'Snack',foods:[{fid:3,name:'Dole mandarin orange cup 7.5oz + 6 Best Maid dill pickle chips',kcal:'80',sod:'120',carb:'20',prot:'1',fat:'0'}]},
+      {id:4,name:'Dinner — Kura Sushi',foods:[{fid:4,name:'Miso soup 75% + 1.5 caterpillar rolls + salmon 50% + kappa maki 50% + spicy salmon roll 50% + 25% Coca-Cola',kcal:'420',sod:'880',carb:'58',prot:'18',fat:'12'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2026-02-04':{weightAM:'142.2',weightPrior:'142.4',notes:'Heavy ankles AM + PM. Low energy. AM Torsemide 20mg + PM 60mg. 3 small BMs + 1 medium.',
+    symptoms:['Fatigue','Dyspnea on exertion'],
+    diuretics:[{time:'07:45',drug:'Torsemide',dose:'20'},{time:'20:03',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'4',name:'Water (with levo)'},{oz:'6',name:'Homemade apple juice',nutrition:{kcal:80,sodium_mg:0,carbs_g:20,protein_g:0,fat_g:0}},{oz:'8',name:'Lemon water'},{oz:'8',name:'Water'},{oz:'6',name:'Juicy Juice Fruit Punch',nutrition:{kcal:70,sodium_mg:10,carbs_g:17,protein_g:0,fat_g:0}},{oz:'8',name:'Water'},{oz:'6',name:'Water'},{oz:'6',name:'Fruit Punch',nutrition:{kcal:70,sodium_mg:10,carbs_g:17,protein_g:0,fat_g:0}}],
+    outputs:[{time:'02:23',vol:'50'},{time:'05:50',vol:'50'},{time:'06:00',vol:'300'},{time:'07:55',vol:'300'},{time:'10:40',vol:'50'},{time:'11:00',vol:'50'},{time:'11:30',vol:'50'},{time:'12:00',vol:'50'},{time:'12:30',vol:'50'},{time:'13:00',vol:'300'},{time:'22:05',vol:'700'}],
+    bms:[{time:'12:00'},{time:'13:00'},{time:'14:00'},{time:'15:00'}],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Wawa Strawberry Mango Smoothie 25%',kcal:'65',sod:'8',carb:'14',prot:'1',fat:'1'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'Minute Rice 1 serving + Kettle & Fire Low Sodium Veggie Broth 1 cup',kcal:'235',sod:'375',carb:'52',prot:'4',fat:'1'}]},
+      {id:3,name:'Snack',foods:[{fid:3,name:'Goldfish Parmesan 1 serving',kcal:'140',sod:'200',carb:'20',prot:'3',fat:'5'}]},
+      {id:4,name:'Dinner',foods:[{fid:4,name:"Annie's microwaveable Mac & Cheese white cheddar + Elios Pizza ~50% + Dole Mandarin Orange cup 7oz",kcal:'480',sod:'820',carb:'72',prot:'14',fat:'16'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2026-02-03':{weightAM:'142.4',weightPrior:'143.2',notes:'-0.8 lb. AM Torsemide 20mg + PM 60mg. Heavy ankles. Na ~1,405mg. 2 BMs.',
+    diuretics:[{time:'10:12',drug:'Torsemide',dose:'20'},{time:'19:45',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'4',name:'Water (with levo)'},{oz:'6',name:'Water'},{oz:'6',name:'Fruit Punch',nutrition:{kcal:70,sodium_mg:10,carbs_g:17,protein_g:0,fat_g:0}},{oz:'6',name:'Lemon water'},{oz:'6',name:'Lemon water'},{oz:'2',name:'Lemon water'},{oz:'10',name:'Lemon water'}],
+    outputs:[{time:'02:23',vol:'700'},{time:'05:50',vol:'50'},{time:'10:05',vol:'300'},{time:'12:05',vol:'300'},{time:'12:50',vol:'50'},{time:'15:15',vol:'700'},{time:'16:45',vol:'50'},{time:'18:30',vol:'50'},{time:'20:45',vol:'300'},{time:'21:55',vol:'700'},{time:'22:59',vol:'300'}],
+    bms:[{time:'12:00'},{time:'13:00'}],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Wawa Strawberry Mango Smoothie 4oz',kcal:'30',sod:'8',carb:'7',prot:'0',fat:'0'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'Minute Rice 1 serving + Kettle & Fire Low Sodium Veggie Broth 2 cups',kcal:'275',sod:'510',carb:'62',prot:'6',fat:'1'}]},
+      {id:3,name:'Snack',foods:[{fid:3,name:'Goldfish Parmesan 1 serving',kcal:'140',sod:'200',carb:'20',prot:'3',fat:'5'}]},
+      {id:4,name:'Dinner',foods:[{fid:4,name:"Campbell's Creamy Tomato Soup microwaveable + Polly-O cheese stick",kcal:'655',sod:'705',carb:'72',prot:'16',fat:'30'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2026-02-02':{weightAM:'143.2',weightPrior:'142.8',notes:'+0.4 lb. AM Torsemide 20mg + PM 60mg. Heavy ankles. Na ~1,840mg — above target.',
+    diuretics:[{time:'07:48',drug:'Torsemide',dose:'20'},{time:'19:20',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'4',name:'Water (levo)'},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'12',name:'Sprite',nutrition:{kcal:140,sodium_mg:45,carbs_g:38,protein_g:0,fat_g:0}},{oz:'8',name:'Water'},{oz:'4',name:'Water'},{oz:'8',name:'Water'},{oz:'6',name:'Fruit Punch',nutrition:{kcal:70,sodium_mg:10,carbs_g:17,protein_g:0,fat_g:0}}],
+    outputs:[{time:'02:23',vol:'50'},{time:'05:50',vol:'50'},{time:'09:30',vol:'300'},{time:'10:45',vol:'50'},{time:'13:00',vol:'300'},{time:'13:50',vol:'50'},{time:'16:12',vol:'300'},{time:'19:17',vol:'50'},{time:'20:45',vol:'700'},{time:'21:35',vol:'300'},{time:'22:16',vol:'50'}],
+    bms:[{time:'12:00'}],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Wawa Strawberry Mango Smoothie',kcal:'260',sod:'95',carb:'52',prot:'4',fat:'4'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'25% Sarku Japan fried rice + buckwheat soba noodles',kcal:'350',sod:'500',carb:'62',prot:'10',fat:'8'}]},
+      {id:3,name:'Dinner',foods:[{fid:3,name:"Campbell's Creamy Tomato Soup 630mg + Texas Toast Breadstick 360mg",kcal:'480',sod:'990',carb:'72',prot:'12',fat:'16'}]},
+      {id:4,name:'Snack',foods:[{fid:4,name:'Simply Ruffles Sea Salt + Texas Pete hot sauce',kcal:'160',sod:'255',carb:'18',prot:'2',fat:'10'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2026-01-31':{weightAM:'144.6',weightPrior:'144.4',notes:'AM Torsemide 20mg 8:08am + PM 60mg 8:10pm. Heavy legs AM → improving PM. Puffy face. Low sodium day.',
+    diuretics:[{time:'08:08',drug:'Torsemide',dose:'20'},{time:'20:10',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'2',name:'Water (meds)'},{oz:'4',name:'Juicy Juice Fruit Punch',nutrition:{kcal:50,sodium_mg:10,carbs_g:12,protein_g:0,fat_g:0}},{oz:'8',name:'Lemon water'},{oz:'8',name:'Lemon water'},{oz:'8',name:'Lemon water'},{oz:'8',name:'Lemon water'},{oz:'8',name:'Lemon water'},{oz:'8',name:'Water'},{oz:'8',name:'Water'}],
+    outputs:[{time:'07:00',vol:'700'},{time:'10:12',vol:'700'},{time:'13:28',vol:'300'},{time:'16:19',vol:'300'},{time:'22:02',vol:'700'}],
+    bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Wawa Strawberry Mango Smoothie 16oz',kcal:'260',sod:'35',carb:'52',prot:'4',fat:'4'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:"Bell & Evans GF Chicken Tenders 2pc + 1T Texas Pete hot sauce + 1 Hershey's kiss",kcal:'290',sod:'379',carb:'14',prot:'22',fat:'12'}]},
+      {id:3,name:'Snack',foods:[{fid:3,name:"1 cheese stick + 1\" Elios Three Cheese Pizza slice",kcal:'170',sod:'160',carb:'8',prot:'10',fat:'10'}]},
+      {id:4,name:'Dinner',foods:[{fid:4,name:'1 cup Barilla Mini Wheels pasta + 1/2 cup Hoboken Farms Low Sodium Marinara',kcal:'330',sod:'245',carb:'62',prot:'12',fat:'4'}]},
+      {id:5,name:'Dessert',foods:[{fid:5,name:'Outshine Grape Fruit Bar',kcal:'60',sod:'0',carb:'15',prot:'0',fat:'0'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2026-01-29':{weightAM:'144.8',weightPrior:'144.4',notes:'AM Torsemide 20mg 8:30am + PM 60mg 8:05pm. 9 voids. Light intake day.',
+    diuretics:[{time:'08:30',drug:'Torsemide',dose:'20'},{time:'20:05',drug:'Torsemide',dose:'60'}],
+    fluids:[{oz:'12',name:'Water'},{oz:'10',name:'Water'},{oz:'21',name:'Water'},{oz:'8',name:'Juicy Juice Fruit Punch',nutrition:{kcal:80,sodium_mg:10,carbs_g:20,protein_g:0,fat_g:0}},{oz:'4',name:'Water'},{oz:'4',name:'Water'},{oz:'12',name:'Water'},{oz:'4',name:'Water'}],
+    outputs:[{time:'08:48',vol:'150'},{time:'11:02',vol:'500'},{time:'13:03',vol:'50'},{time:'14:20',vol:'150'},{time:'16:27',vol:'300'},{time:'20:07',vol:'300'},{time:'21:20',vol:'300'},{time:'22:52',vol:'300'},{time:'02:17',vol:'500'}],
+    bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'Wawa Strawberry Yogurt Parfait 5.4oz',kcal:'180',sod:'80',carb:'28',prot:'8',fat:'4'}]},
+      {id:2,name:'Snack',foods:[{fid:2,name:'4 Bachman Butter Pretzels + WF Fruit Cup (5 red grapes + 4 melon pieces)',kcal:'80',sod:'120',carb:'18',prot:'2',fat:'1'}]},
+      {id:3,name:'Lunch',foods:[{fid:3,name:"1/2 Moe's Rice Bowl (seasoned rice + grilled white meat chicken)",kcal:'350',sod:'420',carb:'48',prot:'24',fat:'6'}]},
+      {id:4,name:'Dinner',foods:[{fid:4,name:'1 cup wagon wheels pasta + 1/2 cup Hoboken Farms Low Na Marinara + 1 tsp Smart Balance low-sodium butter',kcal:'310',sod:'140',carb:'58',prot:'10',fat:'5'}]},
+      {id:5,name:'Dessert',foods:[{fid:5,name:'4 Vanilla Wafers',kcal:'70',sod:'50',carb:'12',prot:'1',fat:'2'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+
+  '2026-01-30':{weightAM:'144.4',weightPrior:'144.8',notes:'Log started at noon 1/28. AM Torsemide 20mg 1pm + PM 80mg 8pm. Cape Cod Cafe pizza dinner — Subway Turkey sub lunch.',
+    diuretics:[{time:'13:00',drug:'Torsemide',dose:'20'},{time:'20:00',drug:'Torsemide',dose:'80'}],
+    fluids:[{oz:'10.5',name:'Water'},{oz:'16',name:'Starry Soda',nutrition:{kcal:150,sodium_mg:35,carbs_g:42,protein_g:0,fat_g:0}},{oz:'7',name:'Water'},{oz:'6',name:'Broth',nutrition:{kcal:15,sodium_mg:300,carbs_g:2,protein_g:1,fat_g:0}},{oz:'8',name:'Water'},{oz:'8',name:'Water'},{oz:'10',name:'Water'},{oz:'6',name:'Water'},{oz:'7.5',name:'Ginger Ale',nutrition:{kcal:80,sodium_mg:25,carbs_g:21,protein_g:0,fat_g:0}},{oz:'12',name:'Water'},{oz:'12',name:'Water (overnight)'}],
+    outputs:[{time:'08:00',vol:'300'},{time:'10:00',vol:'150'},{time:'11:00',vol:'150'},{time:'13:00',vol:'300'},{time:'14:00',vol:'150'},{time:'15:00',vol:'300'},{time:'16:30',vol:'500'},{time:'18:30',vol:'500'},{time:'22:35',vol:'300'},{time:'01:00',vol:'500'},{time:'04:00',vol:'150'}],
+    bms:[],
+    meals:[
+      {id:1,name:'Breakfast',foods:[{fid:1,name:'1.5 thin slices Panera sourdough + 1 Panera chocolate chip muffie',kcal:'310',sod:'380',carb:'52',prot:'6',fat:'8'}]},
+      {id:2,name:'Lunch',foods:[{fid:2,name:'Baked Lays 150cal pack + Subway 6" Turkey on Italian herb & cheese (pickles, banana peppers, olives, MVP vinaigrette, sweet onion teriyaki)',kcal:'580',sod:'1100',carb:'78',prot:'24',fat:'14'}]},
+      {id:3,name:'Dinner',foods:[{fid:3,name:'Cape Cod Cafe cheese pizza 1/2 + 1 cup mandarin orange in water',kcal:'650',sod:'980',carb:'88',prot:'22',fat:'22'}]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}},
+};
+
+function runRecoveredImport(){
+  const btn=document.getElementById('importRecoveredBtn');
+  if(btn){btn.textContent='Importing...';btn.disabled=true;}
+  try{
+    let all=getAllDays();let imported=0,skipped=0;
+    Object.entries(RECOVERED_DAYS).forEach(([date,day])=>{
+      // Only skip if day already has detailed meal data
+      if(all[date]&&all[date].meals&&all[date].meals.length>0&&all[date].diuretics&&all[date].diuretics.length>0){skipped++;return;}
+      const existing=all[date]||{};
+      all[date]={
+        weightAM:existing.weightAM||day.weightAM||'',
+        weightPrior:existing.weightPrior||day.weightPrior||'',
+        edema:existing.edema||'',
+        funcStatus:existing.funcStatus||'',
+        symptoms:existing.symptoms||day.symptoms||[],
+        notes:existing.notes||day.notes||'',
+        diuretics:day.diuretics||existing.diuretics||[],
+        fluids:day.fluids||existing.fluids||[],
+        outputs:day.outputs||existing.outputs||[],
+        bms:day.bms||existing.bms||[],
+        meals:(day.meals||[]).map(m=>({id:m.id,name:m.name,foods:(m.foods||[]).map(f=>({fid:f.fid||f.id,name:f.name,kcal:String(f.kcal||'0'),sod:String(f.sod||'0'),carb:String(f.carb||'0'),prot:String(f.prot||'0'),fat:String(f.fat||'0')}))})),
+        exercise:existing.exercise||[],
+        labs:existing.labs||day.labs||{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''},
+        noDiureticsToday:existing.noDiureticsToday||false
+      };
+      imported++;
+    });
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(all));
+    drawWeightChart();updateProgressTab();
+    if(btn){btn.textContent=`✓ ${imported} days restored!`;btn.className='import-btn done';}
+    loadDay(currentDate);
+    showToast(`✓ ${imported} days of daily logs restored`);
+    setTimeout(()=>{if(btn){btn.textContent='Daily logs loaded ✓';btn.disabled=true;}},3000);
+  }catch(e){
+    if(btn){btn.textContent='Error — try again';btn.disabled=false;}
+    console.error(e);
+  }
+}
+
 function runTripImport(){
   const btn=document.getElementById('importTripBtn');
   btn.textContent='Importing...';btn.disabled=true;
