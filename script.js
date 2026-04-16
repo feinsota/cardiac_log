@@ -275,6 +275,7 @@ function loadDay(dateKey){
   }
   drawWeightChart();
   updateProgressTab();
+  applyLockedDayUI(dateKey, saved);
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -1990,7 +1991,302 @@ function runTripImport(){
 
 
 // ════════════════════════════════════════════════════════════════════════
-// iOS INSTALL HINT — shows non-intrusive banner in mobile Safari
+// LOCKED DAY UI — trip days are read-only but fully visible
+// ════════════════════════════════════════════════════════════════════════
+function applyLockedDayUI(dateKey, dayData){
+  // Remove any previous locked banner
+  const existing=document.getElementById('lockedDayBanner');
+  if(existing)existing.remove();
+  document.body.classList.remove('day-locked');
+
+  if(!dayData||!dayData.locked)return;
+
+  // Add locked class to body for CSS targeting
+  document.body.classList.add('day-locked');
+
+  // Insert banner below date bar
+  const dateBar=document.querySelector('.date-bar');
+  if(!dateBar)return;
+
+  const banner=document.createElement('div');
+  banner.id='lockedDayBanner';
+  banner.style.cssText='background:var(--surface2);border:1px solid var(--border-med);border-radius:var(--radius);padding:10px 16px;margin-bottom:0.9rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;';
+
+  const tripName=dayData.tripName||'Trip';
+  const left=document.createElement('div');
+  left.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;';
+  left.innerHTML=`<span style="background:var(--primary);color:white;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">✈️ ${tripName}</span><span style="background:var(--surface3);color:var(--text3);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">🔒 Locked</span><span style="font-size:12.5px;color:var(--text2);">This day is read-only — historical trip entry</span>`;
+
+  const unlockBtn=document.createElement('button');
+  unlockBtn.textContent='Unlock';
+  unlockBtn.style.cssText='background:none;border:1px solid var(--border-med);border-radius:var(--radius-sm);color:var(--text3);padding:4px 12px;font-size:12px;font-family:\'Inter\',sans-serif;cursor:pointer;white-space:nowrap;';
+  unlockBtn.onclick=()=>unlockDay(dateKey);
+
+  banner.appendChild(left);
+  banner.appendChild(unlockBtn);
+  dateBar.insertAdjacentElement('afterend',banner);
+
+  // Disable all inputs on the page
+  setTimeout(()=>{
+    document.querySelectorAll('.app input:not([type=date]):not(#apiKeyInput), .app textarea, .app select, .app button.add-btn, .app button.none-diuretics-btn, .app button.ai-lookup-btn, .app button.save-fav-btn').forEach(el=>{
+      if(el.closest('#lockedDayBanner'))return;
+      if(el.id==='saveNowBtn')return;
+      el.disabled=true;
+      el.style.opacity='0.65';
+      el.style.cursor='not-allowed';
+    });
+    // Dim sections slightly
+    document.querySelectorAll('.tab-panel.active .section').forEach(s=>{
+      s.style.opacity='0.82';
+    });
+    // Override save bar
+    setSaveStatus('saved','🔒 Locked — read-only trip day');
+    const saveBtn=document.getElementById('saveNowBtn');
+    if(saveBtn){saveBtn.disabled=true;saveBtn.style.opacity='0.4';}
+  },50);
+}
+
+function unlockDay(dateKey){
+  if(!confirm(`Unlock ${fmtDateLabel(dateKey)} for editing?\n\nThis will allow you to modify this trip day. You can re-lock it manually by adding status:"locked" back to the entry.`))return;
+  const all=getAllDays();
+  if(all[dateKey]){
+    all[dateKey].locked=false;
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(all));
+  }
+  loadDay(dateKey);
+  showToast('Day unlocked — you can now edit this entry');
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// 2026 SOUTHEAST TRIP DATA — Apr 2–7 2026
+// Baked in permanently. Safe merge only — never overwrites existing data.
+// Version flag: TRIP_2026_SE_V1
+// ════════════════════════════════════════════════════════════════════════
+const TRIP_2026_SE={
+  '2026-04-02':{
+    weightAM:'134.8',weightPrior:'',
+    locked:true,trip:true,tripName:'Savannah / Southeast',
+    notes:'Travel day — EWR departure. Baseline 134.8 lb pre-trip (not dry weight — steroid belly residual). High sodium travel day ~4,200mg.',
+    diuretics:[],fluids:[
+      {oz:'12',name:'Pickle House Tomato Juice (United Airlines)',nutrition:{kcal:50,sodium_mg:600,carbs_g:10,protein_g:2,fat_g:0}}
+    ],outputs:[],bms:[],
+    meals:[
+      {id:1,name:'Lunch — EWR',foods:[
+        {fid:1,name:"2 slices pizza EWR Nonna's",kcal:'600',sod:'1200',carb:'80',prot:'24',fat:'20'},
+        {fid:2,name:'Wedge salad lemon vinaigrette',kcal:'200',sod:'300',carb:'12',prot:'6',fat:'14'}
+      ]},
+      {id:2,name:'Dinner — Flying Monk SAV',foods:[
+        {fid:3,name:'Pad Thai (Flying Monk SAV)',kcal:'900',sod:'1500',carb:'110',prot:'28',fat:'30'},
+        {fid:4,name:'Fried vegetable dumplings',kcal:'300',sod:'600',carb:'36',prot:'8',fat:'12'}
+      ]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:'Travel day EWR→SAV.'}
+  },
+  '2026-04-03':{
+    weightAM:'',weightPrior:'134.8',
+    locked:true,trip:true,tripName:'Savannah / Southeast',
+    notes:'Savannah + Jekyll Island. ~3,120mg Na / ~2,400 kcal.',
+    diuretics:[],fluids:[
+      {oz:'16',name:'Savannah Sweet Tea bottle',nutrition:{kcal:150,sodium_mg:50,carbs_g:38,protein_g:0,fat_g:0}},
+      {oz:'8',name:'Cranberry club soda w/ lime',nutrition:{kcal:100,sodium_mg:20,carbs_g:24,protein_g:0,fat_g:0}}
+    ],outputs:[],bms:[],
+    meals:[
+      {id:1,name:'Breakfast — Hyatt Regency SAV',foods:[
+        {fid:1,name:'3 slices toast w/ butter',kcal:'450',sod:'500',carb:'54',prot:'9',fat:'18'},
+        {fid:2,name:'Fresh fruit',kcal:'100',sod:'0',carb:'25',prot:'1',fat:'0'}
+      ]},
+      {id:2,name:'Lunch — Corridor Z Kitchen Jekyll Island',foods:[
+        {fid:3,name:'Garden salad no egg honey vinaigrette',kcal:'250',sod:'300',carb:'20',prot:'4',fat:'14'},
+        {fid:4,name:'Fries w/ BBQ sauce',kcal:'300',sod:'400',carb:'42',prot:'4',fat:'12'}
+      ]},
+      {id:3,name:'Snack',foods:[
+        {fid:5,name:"6 glazed pecans Buc-ee's",kcal:'250',sod:'50',carb:'18',prot:'3',fat:'18'}
+      ]},
+      {id:4,name:'Dinner — Pirates House SAV',foods:[
+        {fid:6,name:'Chicken gumbo',kcal:'300',sod:'1000',carb:'28',prot:'22',fat:'10'},
+        {fid:7,name:'2 biscuits honey butter + orange marmalade',kcal:'500',sod:'800',carb:'62',prot:'8',fat:'22'}
+      ]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}
+  },
+  '2026-04-04':{
+    weightAM:'',weightPrior:'',
+    locked:true,trip:true,tripName:'Savannah / Southeast',
+    notes:"Savannah. Highest sodium day (~4,560mg). ~2,480 kcal. Annie O's dinner was high Na.",
+    diuretics:[],fluids:[
+      {oz:'8',name:"Pink lemonade 1/2 glass Vinnie's",nutrition:{kcal:80,sodium_mg:10,carbs_g:21,protein_g:0,fat_g:0}},
+      {oz:'16',name:"Sweet tea Annie O's",nutrition:{kcal:150,sodium_mg:50,carbs_g:38,protein_g:0,fat_g:0}}
+    ],outputs:[],bms:[],
+    meals:[
+      {id:1,name:'Breakfast — Hyatt room service',foods:[
+        {fid:1,name:'2 slices bacon',kcal:'100',sod:'300',carb:'0',prot:'7',fat:'8'},
+        {fid:2,name:'Toast w/ butter',kcal:'300',sod:'400',carb:'36',prot:'6',fat:'14'}
+      ]},
+      {id:2,name:"Lunch — Vinnie's Van Go Go SAV",foods:[
+        {fid:3,name:'Pizza slice green + black olives',kcal:'350',sod:'800',carb:'42',prot:'14',fat:'14'},
+        {fid:4,name:'6 mini Byrd cookies',kcal:'150',sod:'100',carb:'22',prot:'2',fat:'6'}
+      ]},
+      {id:3,name:"Dinner — Annie O's Kitchen",foods:[
+        {fid:5,name:'Jumbo chicken strips',kcal:'600',sod:'1200',carb:'32',prot:'42',fat:'24'},
+        {fid:6,name:'BBQ sauce',kcal:'150',sod:'300',carb:'34',prot:'1',fat:'1'},
+        {fid:7,name:'Mac and cheese side',kcal:'400',sod:'800',carb:'48',prot:'14',fat:'18'},
+        {fid:8,name:'Baked beans side',kcal:'200',sod:'600',carb:'38',prot:'8',fat:'2'}
+      ]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}
+  },
+  '2026-04-05':{
+    weightAM:'',weightPrior:'',
+    locked:true,trip:true,tripName:'Savannah / Southeast',
+    notes:'Hilton Head. Highest calorie day (~3,660 kcal / ~5,010mg Na). Large dinner Ombra Italian.',
+    diuretics:[],fluids:[
+      {oz:'4',name:"Apple juice 1/2 glass Gringo's Diner",nutrition:{kcal:60,sodium_mg:10,carbs_g:15,protein_g:0,fat_g:0}},
+      {oz:'8',name:'Cranberry club soda w/ lime Sandbar',nutrition:{kcal:100,sodium_mg:20,carbs_g:24,protein_g:0,fat_g:0}},
+      {oz:'8',name:'Ginger Ale Ombra Italian',nutrition:{kcal:80,sodium_mg:25,carbs_g:21,protein_g:0,fat_g:0}}
+    ],outputs:[],bms:[],
+    meals:[
+      {id:1,name:"Breakfast — Gringo's Diner HH",foods:[
+        {fid:1,name:"3 silver dollar choc chip pancakes w/ Smucker's syrup",kcal:'400',sod:'500',carb:'60',prot:'8',fat:'12'}
+      ]},
+      {id:2,name:'Lunch app — Sandbar Colony Plaza',foods:[
+        {fid:2,name:'1/2 soft pretzel w/ beer cheese',kcal:'400',sod:'900',carb:'52',prot:'12',fat:'16'}
+      ]},
+      {id:3,name:'Lunch main — Sandbar',foods:[
+        {fid:3,name:'Caribbean chicken w/ jasmine rice, fries, mango salsa',kcal:'1000',sod:'1500',carb:'110',prot:'52',fat:'28'}
+      ]},
+      {id:4,name:'Dinner — Ombra Italian HH',foods:[
+        {fid:4,name:'Panzanella alla Toscana',kcal:'300',sod:'400',carb:'28',prot:'8',fat:'16'},
+        {fid:5,name:'2 slices focaccia w/ EVOO dip',kcal:'300',sod:'300',carb:'36',prot:'6',fat:'14'},
+        {fid:6,name:'Fusilli alla Puttanesca',kcal:'800',sod:'1200',carb:'96',prot:'22',fat:'24'}
+      ]},
+      {id:5,name:'Dessert',foods:[
+        {fid:7,name:'Turoni birthday cake chocolate slice',kcal:'400',sod:'200',carb:'56',prot:'6',fat:'18'}
+      ]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}
+  },
+  '2026-04-06':{
+    weightAM:'',weightPrior:'',
+    locked:true,trip:true,tripName:'Savannah / Southeast',
+    notes:'HH→Charleston. ~4,060mg Na / ~2,120 kcal. O-Ku Sushi high Na from miso + soy.',
+    diuretics:[],fluids:[
+      {oz:'8',name:'Gold Peak sweet tea Tide Me Over HH',nutrition:{kcal:150,sodium_mg:50,carbs_g:38,protein_g:0,fat_g:0}},
+      {oz:'8',name:'Fresh lemonade Charleston N Market',nutrition:{kcal:120,sodium_mg:10,carbs_g:30,protein_g:0,fat_g:0}},
+      {oz:'8',name:'Cranberry club soda O-Ku Sushi',nutrition:{kcal:80,sodium_mg:20,carbs_g:20,protein_g:0,fat_g:0}}
+    ],outputs:[],bms:[],
+    meals:[
+      {id:1,name:'Breakfast — Tide Me Over HH',foods:[
+        {fid:1,name:"Mickey waffle hollowed out w/ Smucker's syrup",kcal:'400',sod:'500',carb:'58',prot:'8',fat:'12'},
+        {fid:2,name:'2 slices bacon',kcal:'100',sod:'300',carb:'0',prot:'7',fat:'8'}
+      ]},
+      {id:2,name:'Lunch — Magnolia Plantation Peacock Cafe',foods:[
+        {fid:3,name:'Turkey BLT (1/4 eaten)',kcal:'200',sod:'400',carb:'18',prot:'12',fat:'8'},
+        {fid:4,name:'Carolina BBQ chips 3/4 bag',kcal:'300',sod:'400',carb:'38',prot:'4',fat:'14'},
+        {fid:5,name:'Pepper Palace samples 1T',kcal:'15',sod:'80',carb:'3',prot:'0',fat:'0'}
+      ]},
+      {id:3,name:'Dinner — O-Ku Sushi Charleston',foods:[
+        {fid:6,name:'Sunomono salad',kcal:'100',sod:'300',carb:'16',prot:'4',fat:'2'},
+        {fid:7,name:'Miso soup',kcal:'50',sod:'800',carb:'6',prot:'4',fat:'2'},
+        {fid:8,name:'1/2 spicy salmon + 1/2 eel fortune + 1/2 sweet potato roll',kcal:'500',sod:'1200',carb:'72',prot:'20',fat:'14'}
+      ]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''}
+  },
+  '2026-04-07':{
+    weightAM:'',weightPrior:'',
+    locked:true,trip:true,tripName:'Savannah / Southeast',
+    notes:"Last trip day / travel home. Kiss Cafe breakfast. Rodney Scott's BBQ lunch. Light dinner travel. Begin low Na reset tomorrow.",
+    diuretics:[],fluids:[
+      {oz:'12',name:"Coca-Cola small fountain Rodney Scott's",nutrition:{kcal:140,sodium_mg:45,carbs_g:38,protein_g:0,fat_g:0}}
+    ],outputs:[],bms:[],
+    meals:[
+      {id:1,name:'Breakfast — Kiss Cafe Charleston',foods:[
+        {fid:1,name:'The Long Islander bagel sandwich (Kiss Cafe)',kcal:'550',sod:'900',carb:'62',prot:'28',fat:'18'},
+        {fid:2,name:'Biscuits (Kiss Cafe)',kcal:'350',sod:'500',carb:'44',prot:'8',fat:'16'},
+        {fid:3,name:'Potatoes (Kiss Cafe)',kcal:'200',sod:'300',carb:'38',prot:'4',fat:'6'}
+      ]},
+      {id:2,name:"Lunch — Rodney Scott's BBQ",foods:[
+        {fid:4,name:"2.5 chicken tenders + few bites mac & cheese + 1/4 cornbread + 1-2T BBQ sauce",kcal:'650',sod:'1100',carb:'52',prot:'38',fat:'22'}
+      ]},
+      {id:3,name:'Snack',foods:[
+        {fid:5,name:'1/2 scoop River Street sweet peach gelato',kcal:'120',sod:'30',carb:'20',prot:'2',fat:'4'}
+      ]},
+      {id:4,name:'Dinner — travel',foods:[
+        {fid:6,name:'Few BK fries + 2 chicken nuggets',kcal:'250',sod:'450',carb:'34',prot:'8',fat:'10'}
+      ]}
+    ],exercise:[],labs:{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:'Last trip day.'}
+  }
+};
+
+const TRIP_2026_VERSION_KEY='cardiacLog_trip2026_se_v1';
+
+function runTrip2026Import(){
+  // One-time safe migration — version flag prevents duplicate inserts
+  if(localStorage.getItem(TRIP_2026_VERSION_KEY)==='done'){
+    showToast('2026 trip data already loaded');return;
+  }
+  const btn=document.getElementById('importTrip2026Btn');
+  if(btn){btn.textContent='Loading...';btn.disabled=true;}
+  try{
+    let all=getAllDays();
+    let imported=0,merged=0;
+    Object.entries(TRIP_2026_SE).forEach(([date,day])=>{
+      const existing=all[date];
+      if(!existing){
+        // Date doesn't exist — create it
+        all[date]={
+          weightAM:day.weightAM||'',
+          weightPrior:day.weightPrior||'',
+          edema:'',funcStatus:'',
+          symptoms:[],
+          notes:day.notes||'',
+          diuretics:day.diuretics||[],
+          fluids:day.fluids||[],
+          outputs:[],bms:[],
+          meals:day.meals.map(m=>({id:m.id,name:m.name,foods:m.foods.map(f=>({fid:f.fid,name:f.name,kcal:String(f.kcal),sod:String(f.sod),carb:String(f.carb),prot:String(f.prot),fat:String(f.fat)}))})),
+          exercise:[],
+          labs:day.labs||{k:'',na:'',cr:'',bnp:'',tsh:'',ft4:'',events:''},
+          noDiureticsToday:false,
+          locked:true,
+          trip:true,
+          tripName:day.tripName
+        };
+        imported++;
+      } else {
+        // Date exists — ONLY add missing fields, never overwrite
+        let changed=false;
+        if(!existing.locked){existing.locked=true;changed=true;}
+        if(!existing.trip){existing.trip=true;changed=true;}
+        if(!existing.tripName){existing.tripName=day.tripName;changed=true;}
+        if((!existing.meals||existing.meals.length===0)&&day.meals.length>0){
+          existing.meals=day.meals.map(m=>({id:m.id,name:m.name,foods:m.foods.map(f=>({fid:f.fid,name:f.name,kcal:String(f.kcal),sod:String(f.sod),carb:String(f.carb),prot:String(f.prot),fat:String(f.fat)}))}));
+          changed=true;
+        }
+        if((!existing.fluids||existing.fluids.length===0)&&day.fluids.length>0){existing.fluids=day.fluids;changed=true;}
+        if(!existing.notes&&day.notes){existing.notes=day.notes;changed=true;}
+        if(!existing.weightAM&&day.weightAM){existing.weightAM=day.weightAM;changed=true;}
+        if(!existing.weightPrior&&day.weightPrior){existing.weightPrior=day.weightPrior;changed=true;}
+        if(changed){all[date]=existing;merged++;}
+      }
+    });
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(all));
+    localStorage.setItem(TRIP_2026_VERSION_KEY,'done');
+    drawWeightChart();updateProgressTab();
+    const total=imported+merged;
+    if(btn){btn.textContent=`✓ ${total} days loaded!`;btn.className='import-btn done';}
+    loadDay(currentDate);
+    showToast(`✓ Trip loaded — ${imported} created, ${merged} merged`);
+    setTimeout(()=>{if(btn){btn.textContent='2026 Trip loaded ✓';btn.disabled=true;}},3000);
+  }catch(e){
+    if(btn){btn.textContent='Error — try again';btn.disabled=false;}
+    console.error('Trip 2026 import error:',e);
+  }
+}
+
+// Auto-run on load — silently inserts trip data if not already present
+// Uses version flag so it only runs once and never overwrites anything
+(function autoLoadTrip2026(){
+  if(localStorage.getItem(TRIP_2026_VERSION_KEY)==='done')return;
+  // Run after a short delay to avoid blocking initial render
+  setTimeout(runTrip2026Import, 800);
+})();
+
+
 // when not already installed as a home screen PWA
 // ════════════════════════════════════════════════════════════════════════
 (function(){
@@ -2115,5 +2411,11 @@ function checkImportsLoaded2(){
   if(hasHistory&&hBtn){hBtn.textContent='History loaded ✓';hBtn.disabled=true;hBtn.className='import-btn done';}
   const hasTrip=all['2025-04-03']&&all['2025-04-03'].meals&&all['2025-04-03'].meals.length>0;
   const tBtn=document.getElementById('importTripBtn');
-  if(hasTrip&&tBtn){tBtn.textContent='Trip loaded ✓';tBtn.disabled=true;tBtn.className='import-btn done';}
+  if(hasTrip&&tBtn){tBtn.textContent='2025 Trip loaded ✓';tBtn.disabled=true;tBtn.className='import-btn done';}
+  const hasRecovered=all['2025-03-30']&&all['2025-03-30'].diuretics&&all['2025-03-30'].diuretics.length>0;
+  const rBtn=document.getElementById('importRecoveredBtn');
+  if(hasRecovered&&rBtn){rBtn.textContent='Daily logs loaded ✓';rBtn.disabled=true;rBtn.className='import-btn done';}
+  const has2026Trip=localStorage.getItem(TRIP_2026_VERSION_KEY)==='done';
+  const t26Btn=document.getElementById('importTrip2026Btn');
+  if(has2026Trip&&t26Btn){t26Btn.textContent='2026 Trip loaded ✓';t26Btn.disabled=true;t26Btn.className='import-btn done';}
 }
