@@ -1002,3 +1002,54 @@ body.day-locked .save-now-btn {
 #lockedDayBanner {
   animation: fadeUp 0.2s ease;
 }
+
+/* ── BARCODE SCANNER BUTTON ── */
+.barcode-btn {
+  background: var(--surface2) !important;
+  color: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+}
+.barcode-btn:hover {
+  background: var(--primary-light) !important;
+}
+
+#barcodeOverlay video {
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 0 4px rgba(76,175,141,0.2);
+}
+
+/* ── EXTENDED MACRO GRID (5 items) ── */
+#macroDetailRow {
+  grid-template-columns: repeat(5, 1fr);
+}
+@media (max-width: 400px) {
+  #macroDetailRow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── POTASSIUM FIELD HIGHLIGHT ── */
+#food-potassium-\* input,
+input[id^="food-potassium"] {
+  border-color: var(--accent) !important;
+}
+
+/* ── EXTENDED MACRO FIELDS (vitamins) ── */
+.aife-macros {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+.exercise-entry .ex-steps {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 7px;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  font-family: 'JetBrains Mono', monospace;
+}
+.exercise-entry .ex-steps:focus {
+  border-color: var(--primary);
+}

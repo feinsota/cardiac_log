@@ -128,7 +128,18 @@ function collectState(){
       sod:document.getElementById('food-sod-'+fid)?.value||'',
       carb:document.getElementById('food-carb-'+fid)?.value||'',
       prot:document.getElementById('food-prot-'+fid)?.value||'',
-      fat:document.getElementById('food-fat-'+fid)?.value||''
+      fat:document.getElementById('food-fat-'+fid)?.value||'',
+      sugar:document.getElementById('food-sugar-'+fid)?.value||'',
+      fiber:document.getElementById('food-fiber-'+fid)?.value||'',
+      potassium:document.getElementById('food-potassium-'+fid)?.value||'',
+      magnesium:document.getElementById('food-magnesium-'+fid)?.value||'',
+      calcium:document.getElementById('food-calcium-'+fid)?.value||'',
+      vitd:document.getElementById('food-vitd-'+fid)?.value||'',
+      vitc:document.getElementById('food-vitc-'+fid)?.value||'',
+      vita:document.getElementById('food-vita-'+fid)?.value||'',
+      vitb12:document.getElementById('food-vitb12-'+fid)?.value||'',
+      iron:document.getElementById('food-iron-'+fid)?.value||'',
+      folate:document.getElementById('food-folate-'+fid)?.value||''
     }))
   }));
   const symptoms=Array.from(document.querySelectorAll('#symptomChecks input:checked')).map(el=>el.parentElement.textContent.trim());
@@ -167,7 +178,7 @@ function restoreState(raw){
   noDiureticsToday=state.noDiureticsToday||false;
   updateNoDiuBtn();
   (state.diuretics||[]).forEach(d=>addDiuretic(d.drug||'',d.dose||'',d.time||''));
-  (state.exercise||[]).forEach(e=>addExercise(e.type||'',e.duration||'',e.intensity||'Moderate'));
+  (state.exercise||[]).forEach(e=>addExercise(e.type||'',e.duration||'',e.intensity||'Moderate',e.steps||''));
   if(state.labs){
     const L=state.labs;
     const flds=['k','na','cr','bnp','tsh','ft4'];
@@ -230,8 +241,19 @@ function restoreState(raw){
       if(f.carb)setFoodField(fid,'carb',f.carb);
       if(f.prot)setFoodField(fid,'prot',f.prot);
       if(f.fat)setFoodField(fid,'fat',f.fat);
+      if(f.sugar)setFoodField(fid,'sugar',f.sugar);
+      if(f.fiber)setFoodField(fid,'fiber',f.fiber);
+      if(f.potassium)setFoodField(fid,'potassium',f.potassium);
+      if(f.magnesium)setFoodField(fid,'magnesium',f.magnesium);
+      if(f.calcium)setFoodField(fid,'calcium',f.calcium);
+      if(f.vitd)setFoodField(fid,'vitd',f.vitd);
+      if(f.vitc)setFoodField(fid,'vitc',f.vitc);
+      if(f.vita)setFoodField(fid,'vita',f.vita);
+      if(f.vitb12)setFoodField(fid,'vitb12',f.vitb12);
+      if(f.iron)setFoodField(fid,'iron',f.iron);
+      if(f.folate)setFoodField(fid,'folate',f.folate);
       if(f.kcal||f.sod){document.getElementById('food-result-'+fid)?.classList.add('show');}
-      if(f.carb||f.prot||f.fat){document.getElementById('food-macros-'+fid)?.classList.add('show');}
+      if(f.carb||f.prot||f.fat||f.sugar||f.potassium){document.getElementById('food-macros-'+fid)?.classList.add('show');}
     });
   });
   updateDelta();updateBalance();updateNutritionTotals();updateCompletion();
@@ -272,10 +294,28 @@ function loadDay(dateKey){
   } else {
     addDiuretic();addFluid();addOutput();addMealSection();
     setSaveStatus('saved','New day — changes will auto-save');
+    // Auto-carry prior day weight — find most recent logged weight before this date
+    autoCarryPriorWeight(dateKey);
   }
   drawWeightChart();
   updateProgressTab();
   applyLockedDayUI(dateKey, saved);
+}
+
+function autoCarryPriorWeight(dateKey){
+  const all=getAllDays();
+  // Find all dates before today that have a weight, sorted descending
+  const priorDates=Object.keys(all)
+    .filter(d=>d<dateKey&&all[d].weightAM&&parseFloat(all[d].weightAM)>0)
+    .sort((a,b)=>b.localeCompare(a));
+  if(priorDates.length===0)return;
+  const mostRecent=priorDates[0];
+  const priorWeight=all[mostRecent].weightAM;
+  const priorEl=document.getElementById('weightPrior');
+  if(priorEl&&!priorEl.value){
+    priorEl.value=priorWeight;
+    updateDelta();
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -546,27 +586,37 @@ function updateNoDiuBtn(){
 // ════════════════════════════════════════════════════════════════════════
 // EXERCISE
 // ════════════════════════════════════════════════════════════════════════
-function addExercise(prefillType='',prefillDur='',prefillInt='Moderate'){
+function addExercise(prefillType='',prefillDur='',prefillInt='Moderate',prefillSteps=''){
   const id=++exerciseCounter;exerciseEntries.push(id);
   const log=document.getElementById('exerciseLog');
   const row=document.createElement('div');row.className='exercise-entry';row.id='ex-'+id;
   const isStressTest=prefillType==='Stress test';
-  row.innerHTML=`<select class="ex-type" id="ex-type-${id}" onchange="onExTypeChange(${id});autosave()">${EX_TYPES.map(t=>`<option${t===prefillType?' selected':''}>${t}</option>`).join('')}</select><input type="number" class="ex-dur" placeholder="min" min="1" step="1" value="${prefillDur}" id="ex-dur-${id}" oninput="autosave()"><select class="ex-int" id="ex-int-${id}" onchange="autosave()">${EX_INTENSITIES.map(i=>`<option${i===prefillInt?' selected':''}>${i}</option>`).join('')}</select>${isStressTest?'<span class="ex-flag">🫀 Cardiac test</span>':''}<button class="remove-btn" onclick="removeExercise(${id})">×</button>`;
+  const showSteps=prefillType==='Walking'||prefillType==='';
+  row.innerHTML=`<select class="ex-type" id="ex-type-${id}" onchange="onExTypeChange(${id});autosave()">${EX_TYPES.map(t=>`<option${t===prefillType?' selected':''}>${t}</option>`).join('')}</select><input type="number" class="ex-dur" placeholder="min" min="1" step="1" value="${prefillDur}" id="ex-dur-${id}" oninput="autosave()"><select class="ex-int" id="ex-int-${id}" onchange="autosave()">${EX_INTENSITIES.map(i=>`<option${i===prefillInt?' selected':''}>${i}</option>`).join('')}</select><input type="number" class="ex-steps" placeholder="steps" min="0" step="100" value="${prefillSteps}" id="ex-steps-${id}" oninput="autosave()" style="width:78px;display:${showSteps?'block':'none'};" title="Step count"><span class="ex-steps-label" id="ex-steps-lbl-${id}" style="font-size:11px;color:var(--text3);display:${showSteps?'inline':'none'};">steps</span>${isStressTest?'<span class="ex-flag">🫀 Cardiac test</span>':''}<button class="remove-btn" onclick="removeExercise(${id})">×</button>`;
   log.appendChild(row);
 }
 function onExTypeChange(id){
   const val=document.getElementById('ex-type-'+id)?.value;
   const row=document.getElementById('ex-'+id);
+  // Stress test flag
   const existing=row.querySelector('.ex-flag');
   if(val==='Stress test'&&!existing){const span=document.createElement('span');span.className='ex-flag';span.textContent='🫀 Cardiac test';row.insertBefore(span,row.lastChild);}
   else if(val!=='Stress test'&&existing)existing.remove();
+  // Steps field — show for walking, cycling, any step-based activity
+  const stepTypes=['Walking','Moderate cardio','Light cardio','Vigorous cardio','Cycling'];
+  const showSteps=stepTypes.includes(val);
+  const stepsEl=document.getElementById('ex-steps-'+id);
+  const stepsLbl=document.getElementById('ex-steps-lbl-'+id);
+  if(stepsEl)stepsEl.style.display=showSteps?'block':'none';
+  if(stepsLbl)stepsLbl.style.display=showSteps?'inline':'none';
 }
 function removeExercise(id){document.getElementById('ex-'+id)?.remove();exerciseEntries=exerciseEntries.filter(x=>x!==id);autosave();}
 function getExerciseState(){
   return exerciseEntries.map(id=>({
     type:document.getElementById('ex-type-'+id)?.value||'',
     duration:document.getElementById('ex-dur-'+id)?.value||'',
-    intensity:document.getElementById('ex-int-'+id)?.value||'Moderate'
+    intensity:document.getElementById('ex-int-'+id)?.value||'Moderate',
+    steps:document.getElementById('ex-steps-'+id)?.value||''
   })).filter(e=>e.type);
 }
 
@@ -683,6 +733,7 @@ function buildAIFoodHTML(fid,prefillName=''){
       <label class="aife-photo-btn" title="Upload nutrition label or plate photo" for="food-photo-${fid}">📷</label>
       <input type="file" accept="image/*" class="aife-photo-input" id="food-photo-${fid}" onchange="handleFoodPhoto(${fid},this)">
       <img class="aife-photo-preview" id="food-photo-prev-${fid}" onclick="clearFoodPhoto(${fid})">
+      <button class="ai-lookup-btn barcode-btn" id="food-barcode-btn-${fid}" onclick="startBarcodeScanner(${fid})" title="Scan barcode">📷 Scan</button>
       <button class="ai-lookup-btn" id="food-lookup-btn-${fid}" onclick="aiLookupFood(${fid})">♥ AI</button>
       <button class="ai-lookup-btn" id="food-manual-btn-${fid}" onclick="toggleManualMode(${fid})" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border);box-shadow:none;">✏️</button>
       <button class="remove-btn" onclick="removeFoodByFid(${fid})" style="font-size:19px;">×</button>
@@ -697,11 +748,22 @@ function buildAIFoodHTML(fid,prefillName=''){
       <div class="aife-field"><label>kcal</label><input type="number" id="food-kcal-${fid}" placeholder="0" min="0" oninput="updateNutritionTotals();autosave()"></div>
       <div class="aife-field"><label>sodium (mg)</label><input type="number" id="food-sod-${fid}" placeholder="0" min="0" oninput="updateNutritionTotals();autosave()"></div>
     </div>
-    <button class="aife-macros-toggle" onclick="toggleAIFoodMacros(${fid},this)">+ carbs / protein / fat</button>
+    <button class="aife-macros-toggle" onclick="toggleAIFoodMacros(${fid},this)">+ carbs / protein / fat / potassium</button>
     <div class="aife-macros" id="food-macros-${fid}">
       <div class="aife-field"><label>carbs (g)</label><input type="number" id="food-carb-${fid}" placeholder="0" min="0" step="0.5" oninput="updateNutritionTotals();autosave()"></div>
+      <div class="aife-field"><label>sugar (g)</label><input type="number" id="food-sugar-${fid}" placeholder="0" min="0" step="0.5" oninput="updateNutritionTotals();autosave()"></div>
+      <div class="aife-field"><label>fiber (g)</label><input type="number" id="food-fiber-${fid}" placeholder="0" min="0" step="0.5" oninput="autosave()"></div>
       <div class="aife-field"><label>protein (g)</label><input type="number" id="food-prot-${fid}" placeholder="0" min="0" step="0.5" oninput="updateNutritionTotals();autosave()"></div>
       <div class="aife-field"><label>fat (g)</label><input type="number" id="food-fat-${fid}" placeholder="0" min="0" step="0.5" oninput="updateNutritionTotals();autosave()"></div>
+      <div class="aife-field" style="border-left:2px solid var(--accent);padding-left:5px;"><label style="color:var(--accent);">potassium (mg)</label><input type="number" id="food-potassium-${fid}" placeholder="0" min="0" step="1" oninput="updateNutritionTotals();autosave()"></div>
+      <div class="aife-field"><label>magnesium (mg)</label><input type="number" id="food-magnesium-${fid}" placeholder="0" min="0" step="1" oninput="autosave()"></div>
+      <div class="aife-field"><label>calcium (mg)</label><input type="number" id="food-calcium-${fid}" placeholder="0" min="0" step="1" oninput="autosave()"></div>
+      <div class="aife-field"><label>Vitamin D (IU)</label><input type="number" id="food-vitd-${fid}" placeholder="0" min="0" step="1" oninput="autosave()"></div>
+      <div class="aife-field"><label>Vitamin C (mg)</label><input type="number" id="food-vitc-${fid}" placeholder="0" min="0" step="1" oninput="autosave()"></div>
+      <div class="aife-field"><label>Vitamin A (IU)</label><input type="number" id="food-vita-${fid}" placeholder="0" min="0" step="1" oninput="autosave()"></div>
+      <div class="aife-field"><label>Vitamin B12 (mcg)</label><input type="number" id="food-vitb12-${fid}" placeholder="0" min="0" step="0.1" oninput="autosave()"></div>
+      <div class="aife-field"><label>Iron (mg)</label><input type="number" id="food-iron-${fid}" placeholder="0" min="0" step="0.1" oninput="autosave()"></div>
+      <div class="aife-field"><label>Folate (mcg)</label><input type="number" id="food-folate-${fid}" placeholder="0" min="0" step="1" oninput="autosave()"></div>
     </div>
   </div>`;
 }
@@ -709,7 +771,182 @@ function buildAIFoodHTML(fid,prefillName=''){
 function toggleAIFoodMacros(fid,btn){
   const el=document.getElementById('food-macros-'+fid);
   el.classList.toggle('show');
-  btn.textContent=el.classList.contains('show')?'− hide macros':'+ carbs / protein / fat';
+  btn.textContent=el.classList.contains('show')?'− hide macros':'+ carbs / protein / fat / potassium';
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// BARCODE SCANNER — uses device camera + Open Food Facts (no API key needed)
+// ════════════════════════════════════════════════════════════════════════
+async function startBarcodeScanner(fid){
+  // Use BarcodeDetector API if available (Chrome/Android)
+  // On iOS Safari, fall back to file input with camera
+  if('BarcodeDetector' in window){
+    await scanWithBarcodeDetector(fid);
+  } else {
+    // iOS fallback — open camera via file input
+    fallbackBarcodeCapture(fid);
+  }
+}
+
+function fallbackBarcodeCapture(fid){
+  // Create a hidden file input that opens the camera
+  const inp=document.createElement('input');
+  inp.type='file';
+  inp.accept='image/*';
+  inp.capture='environment'; // rear camera
+  inp.style.display='none';
+  document.body.appendChild(inp);
+  inp.onchange=async function(){
+    const file=inp.files[0];
+    document.body.removeChild(inp);
+    if(!file)return;
+    const btn=document.getElementById('food-barcode-btn-'+fid);
+    if(btn){btn.textContent='...';btn.disabled=true;}
+    try{
+      // Try BarcodeDetector on the captured image
+      const imgBitmap=await createImageBitmap(file);
+      if('BarcodeDetector' in window){
+        const detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
+        const barcodes=await detector.detect(imgBitmap);
+        if(barcodes.length>0){
+          await lookupBarcode(fid,barcodes[0].rawValue);
+        } else {
+          showToast('No barcode detected — try again or use ♥ AI');
+        }
+      } else {
+        // Last resort: send image to AI for barcode reading
+        const reader=new FileReader();
+        reader.onload=async e=>{
+          await lookupBarcodeViaAI(fid,e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    }catch(e){
+      showToast('Barcode scan failed — try ♥ AI instead');
+    }
+    if(btn){btn.textContent='📷 Scan';btn.disabled=false;}
+  };
+  inp.click();
+}
+
+async function scanWithBarcodeDetector(fid){
+  const btn=document.getElementById('food-barcode-btn-'+fid);
+  if(btn){btn.textContent='...';btn.disabled=true;}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    // Create scanner overlay
+    const overlay=document.createElement('div');
+    overlay.id='barcodeOverlay';
+    overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;';
+    const video=document.createElement('video');
+    video.autoplay=true;video.playsInline=true;
+    video.style.cssText='width:100%;max-width:400px;border-radius:12px;';
+    video.srcObject=stream;
+    const label=document.createElement('div');
+    label.style.cssText='color:white;font-size:14px;font-family:Inter,sans-serif;text-align:center;padding:0 20px;';
+    label.textContent='Point camera at barcode — scanning...';
+    const cancelBtn=document.createElement('button');
+    cancelBtn.textContent='Cancel';
+    cancelBtn.style.cssText='background:none;border:1px solid rgba(255,255,255,0.4);color:white;padding:8px 24px;border-radius:8px;font-size:14px;font-family:Inter,sans-serif;cursor:pointer;';
+    overlay.appendChild(video);overlay.appendChild(label);overlay.appendChild(cancelBtn);
+    document.body.appendChild(overlay);
+    const detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
+    let found=false;
+    const stopScan=()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      overlay.remove();
+      if(btn){btn.textContent='📷 Scan';btn.disabled=false;}
+    };
+    cancelBtn.onclick=stopScan;
+    const scan=async()=>{
+      if(found||!document.getElementById('barcodeOverlay'))return;
+      try{
+        const barcodes=await detector.detect(video);
+        if(barcodes.length>0){
+          found=true;
+          stopScan();
+          await lookupBarcode(fid,barcodes[0].rawValue);
+          return;
+        }
+      }catch(e){}
+      requestAnimationFrame(scan);
+    };
+    video.onloadedmetadata=()=>requestAnimationFrame(scan);
+  }catch(e){
+    showToast('Camera access denied — use 📷 photo upload instead');
+    if(btn){btn.textContent='📷 Scan';btn.disabled=false;}
+  }
+}
+
+async function lookupBarcode(fid,barcode){
+  showToast('Barcode: '+barcode+' — looking up...');
+  const btn=document.getElementById('food-barcode-btn-'+fid);
+  try{
+    // Open Food Facts — free, no API key, massive database
+    const res=await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+    const data=await res.json();
+    if(data.status!==1||!data.product){
+      showToast('Product not found — try ♥ AI or enter manually');
+      return;
+    }
+    const p=data.product;
+    const n=p.nutriments||{};
+    const name=p.product_name||(p.brands?p.brands+' product':'Scanned product');
+    // Fill food name
+    const nameEl=document.getElementById('food-name-'+fid);
+    if(nameEl&&!nameEl.value)nameEl.value=name;
+    // Fill nutrition fields
+    const fill=(field,val)=>{const el=document.getElementById('food-'+field+'-'+fid);if(el&&val!=null&&val!==undefined&&val!==''){el.value=Math.round(parseFloat(val)*10)/10;el.classList.add('filled');}};
+    fill('kcal',n['energy-kcal_100g']||n['energy-kcal']||null);
+    fill('sod',(n.sodium_100g!=null?n.sodium_100g*1000:null)||(n.salt_100g!=null?n.salt_100g*400:null));
+    fill('carb',n.carbohydrates_100g);
+    fill('sugar',n.sugars_100g);
+    fill('fiber',n.fiber_100g);
+    fill('prot',n.proteins_100g);
+    fill('fat',n.fat_100g);
+    fill('potassium',n.potassium_100g!=null?n.potassium_100g*1000:null);
+    fill('magnesium',n.magnesium_100g!=null?n.magnesium_100g*1000:null);
+    fill('calcium',n.calcium_100g!=null?n.calcium_100g*1000:null);
+    fill('vitd',n['vitamin-d_100g']!=null?n['vitamin-d_100g']*40000:null); // mcg→IU conversion
+    fill('vitc',n['vitamin-c_100g']!=null?n['vitamin-c_100g']*1000:null);
+    fill('vita',n['vitamin-a_100g']!=null?n['vitamin-a_100g']*100000:null);
+    fill('vitb12',n['vitamin-b12_100g']!=null?n['vitamin-b12_100g']*100000:null);
+    fill('iron',n.iron_100g!=null?n.iron_100g*1000:null);
+    fill('folate',n['folates_100g']!=null?n['folates_100g']*100000:null);
+    // Show result
+    document.getElementById('food-result-'+fid)?.classList.add('show');
+    document.getElementById('food-macros-'+fid)?.classList.add('show');
+    // Set confidence badge
+    const cb=document.getElementById('food-conf-'+fid);
+    if(cb){cb.textContent='high confidence';cb.className='conf-badge conf-high';}
+    const nb=document.getElementById('food-note-'+fid);
+    if(nb)nb.textContent='Open Food Facts · barcode '+barcode+(p.brands?' · '+p.brands:'');
+    updateNutritionTotals();autosave();
+    showToast('✓ '+name+' loaded from barcode');
+  }catch(e){
+    showToast('Lookup failed — check connection or try ♥ AI');
+  }
+}
+
+async function lookupBarcodeViaAI(fid,dataUrl){
+  if(!apiKey){showToast('Add API key or enter manually');return;}
+  const btn=document.getElementById('food-barcode-btn-'+fid);
+  try{
+    const base64=dataUrl.split(',')[1];
+    const mt=dataUrl.split(';')[0].split(':')[1];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:base64}},{type:'text',text:'Read the barcode or UPC number from this image, then return the full nutrition facts for that product. Return ONLY JSON: {"product_name":"","kcal":0,"sodium_mg":0,"carbs_g":0,"sugar_g":0,"fiber_g":0,"protein_g":0,"fat_g":0,"potassium_mg":0,"magnesium_mg":0,"calcium_mg":0}'}]}]})});
+    const d=await res.json();
+    const parsed=JSON.parse((d.content?.[0]?.text||'').replace(/```json|```/g,'').trim());
+    const nameEl=document.getElementById('food-name-'+fid);
+    if(nameEl&&!nameEl.value&&parsed.product_name)nameEl.value=parsed.product_name;
+    const fill=(field,val)=>{const el=document.getElementById('food-'+field+'-'+fid);if(el&&val){el.value=Math.round(parseFloat(val)*10)/10;el.classList.add('filled');}};
+    fill('kcal',parsed.kcal);fill('sod',parsed.sodium_mg);fill('carb',parsed.carbs_g);fill('sugar',parsed.sugar_g);fill('fiber',parsed.fiber_g);fill('prot',parsed.protein_g);fill('fat',parsed.fat_g);fill('potassium',parsed.potassium_mg);fill('magnesium',parsed.magnesium_mg);fill('calcium',parsed.calcium_mg);
+    document.getElementById('food-result-'+fid)?.classList.add('show');
+    document.getElementById('food-macros-'+fid)?.classList.add('show');
+    const cb=document.getElementById('food-conf-'+fid);if(cb){cb.textContent='AI barcode read';cb.className='conf-badge conf-med';}
+    updateNutritionTotals();autosave();
+    showToast('✓ Nutrition loaded via AI barcode read');
+  }catch(e){showToast('AI barcode read failed — enter manually');}
 }
 function handleFoodPhoto(fid,input){
   const file=input.files[0];if(!file)return;
@@ -751,7 +988,7 @@ async function aiLookupFood(fid){
   const btn=document.getElementById('food-lookup-btn-'+fid);
   btn.disabled=true;btn.textContent='...';
   const jsonI=`Return ONLY valid JSON, no explanation, no markdown:
-{"kcal":0,"sodium_mg":0,"carbs_g":0,"sugar_g":0,"protein_g":0,"fat_g":0,"confidence":"high|medium|low","source_note":"brief note","range_note":"optional range if uncertain","portion_note":"optional — scaling applied if any"}`;
+{"kcal":0,"sodium_mg":0,"carbs_g":0,"sugar_g":0,"fiber_g":0,"protein_g":0,"fat_g":0,"potassium_mg":0,"magnesium_mg":0,"calcium_mg":0,"vitamin_d_iu":0,"vitamin_c_mg":0,"vitamin_a_iu":0,"vitamin_b12_mcg":0,"iron_mg":0,"folate_mcg":0,"confidence":"high|medium|low","source_note":"brief note","range_note":"optional range if uncertain","portion_note":"optional — scaling applied if any"}`;
   let messages;
   if(photo){
     messages=[{role:'user',content:[
@@ -767,6 +1004,8 @@ async function aiLookupFood(fid){
     const parsed=JSON.parse((data.content?.[0]?.text||'').replace(/```json|```/g,'').trim());
     const fill=(field,val)=>{const el=document.getElementById(`food-${field}-${fid}`);if(el&&val!=null){el.value=Math.round(val*10)/10;el.classList.add('filled');}};
     fill('kcal',parsed.kcal);fill('sod',parsed.sodium_mg);fill('carb',parsed.carbs_g);fill('prot',parsed.protein_g);fill('fat',parsed.fat_g);
+    fill('sugar',parsed.sugar_g);fill('fiber',parsed.fiber_g);fill('potassium',parsed.potassium_mg);fill('magnesium',parsed.magnesium_mg);fill('calcium',parsed.calcium_mg);
+    fill('vitd',parsed.vitamin_d_iu);fill('vitc',parsed.vitamin_c_mg);fill('vita',parsed.vitamin_a_iu);fill('vitb12',parsed.vitamin_b12_mcg);fill('iron',parsed.iron_mg);fill('folate',parsed.folate_mcg);
     if(parsed.carbs_g||parsed.protein_g||parsed.fat_g){
       document.getElementById('food-macros-'+fid)?.classList.add('show');
       const mb=document.querySelector(`[onclick="toggleAIFoodMacros(${fid},this)"]`);
@@ -817,7 +1056,7 @@ function getAllFoodIds(){return mealSections.flatMap(m=>m.foods);}
 // NUTRITION TOTALS — includes fluid nutrition (auto-sync per spec)
 // ════════════════════════════════════════════════════════════════════════
 function updateNutritionTotals(){
-  let kcal=0,carb=0,prot=0,fat=0,sod=0;
+  let kcal=0,carb=0,prot=0,fat=0,sod=0,sugar=0,potassium=0;
   // meal foods
   getAllFoodIds().forEach(fid=>{
     kcal+=parseFloat(document.getElementById('food-kcal-'+fid)?.value||0)||0;
@@ -825,16 +1064,24 @@ function updateNutritionTotals(){
     prot+=parseFloat(document.getElementById('food-prot-'+fid)?.value||0)||0;
     fat+=parseFloat(document.getElementById('food-fat-'+fid)?.value||0)||0;
     sod+=parseFloat(document.getElementById('food-sod-'+fid)?.value||0)||0;
+    sugar+=parseFloat(document.getElementById('food-sugar-'+fid)?.value||0)||0;
+    potassium+=parseFloat(document.getElementById('food-potassium-'+fid)?.value||0)||0;
   });
-  // fluid nutrition AUTO-SYNC — spec Part 9: drinks auto-feed nutrition totals
+  // fluid nutrition AUTO-SYNC
   Object.values(fluidNutrition).forEach(n=>{
-    if(n){kcal+=n.kcal||0;carb+=n.carbs_g||0;prot+=n.protein_g||0;fat+=n.fat_g||0;sod+=n.sodium_mg||0;}
+    if(n){kcal+=n.kcal||0;carb+=n.carbs_g||0;prot+=n.protein_g||0;fat+=n.fat_g||0;sod+=n.sodium_mg||0;sugar+=n.sugar_g||0;potassium+=n.potassium_mg||0;}
   });
   document.getElementById('totKcal').textContent=Math.round(kcal);
   document.getElementById('totSod').textContent=Math.round(sod)+' mg';
   document.getElementById('totCarb').textContent=Math.round(carb)+'g';
   document.getElementById('totProt').textContent=Math.round(prot)+'g';
   document.getElementById('totFat').textContent=Math.round(fat)+'g';
+  // Update potassium display if element exists
+  const potEl=document.getElementById('totPotassium');
+  if(potEl)potEl.textContent=Math.round(potassium)+'mg';
+  // Update sugar display if element exists
+  const sugEl=document.getElementById('totSugar');
+  if(sugEl)sugEl.textContent=Math.round(sugar)+'g';
   const bar=document.getElementById('sodiumBar');const sodCard=document.getElementById('sodCard');
   bar.style.width=Math.min((sod/1500)*100,100)+'%';
   if(sod>1500){sodCard.className='ns-card sodium warn';bar.className='sodium-bar-fill over';}
@@ -998,14 +1245,29 @@ function updateProgressTab(){
     const netMl=Math.round(totalOz*29.5735)-totalOutMl;
     if(netMl>800){adj+=0.3;modifiers.push(`Net +I/O (~+${netMl}mL) → mild retention`);}
     else if(netMl<-500){adj-=0.3;modifiers.push(`Net −I/O (~${netMl}mL) → adequate diuresis`);}
-    // exercise
+    // exercise + steps
     const exercise=today?.exercise||getExerciseState();
     if(exercise?.length>0){
       const hasStressTest=exercise.some(e=>e.type==='Stress test');
       const hasVigorous=exercise.some(e=>e.intensity==='Vigorous'||e.intensity==='Maximal');
       const totalMins=exercise.reduce((s,e)=>s+parseInt(e.duration||0),0);
-      if(hasStressTest){adj-=0.5;modifiers.push('Stress test → transient dip from exertion/sweat');}
-      else if(hasVigorous&&totalMins>30){adj-=0.3;modifiers.push(`Vigorous exercise ${totalMins}min → fluid loss effect`);}
+      const totalSteps=exercise.reduce((s,e)=>s+parseInt(e.steps||0),0);
+      if(hasStressTest){
+        adj-=0.5;modifiers.push('Stress test → transient dip from exertion/sweat (-0.5 lb)');
+      } else {
+        // Steps-based adjustment (cardiac-appropriate thresholds)
+        if(totalSteps>=12000){adj-=0.4;modifiers.push(`${totalSteps.toLocaleString()} steps (very active) → -0.4 lb`);}
+        else if(totalSteps>=8000){adj-=0.3;modifiers.push(`${totalSteps.toLocaleString()} steps (active) → -0.3 lb`);}
+        else if(totalSteps>=5000){adj-=0.2;modifiers.push(`${totalSteps.toLocaleString()} steps (moderate) → -0.2 lb`);}
+        else if(totalSteps>=2000){adj-=0.1;modifiers.push(`${totalSteps.toLocaleString()} steps (light) → -0.1 lb`);}
+        else if(totalSteps>0){
+          // Steps logged but below threshold — no weight adj, just note it
+          modifiers.push(`${totalSteps.toLocaleString()} steps (sedentary range)`);
+        } else if(hasVigorous&&totalMins>30){
+          // No steps logged but vigorous exercise — fallback
+          adj-=0.3;modifiers.push(`Vigorous exercise ${totalMins}min → -0.3 lb`);
+        }
+      }
     }
     predicted+=adj;
     const diff=predicted-(isNaN(w)?entries[entries.length-1].w:w);
@@ -1108,7 +1370,7 @@ BMs: ${(today.bms||[]).length||'none logged'}
 Nutrition: ~${Math.round(kcal)} kcal, Na ~${Math.round(sod)} mg, protein ~${Math.round(prot)} g, liquid carbs ~${Math.round(liquidCarbs)} g
 Symptoms: ${symptoms.length?symptoms.join(', '):'none reported'}
 Edema: ${edema}, Functional status: ${func}
-Activity: ${exercise.length?exercise.map(e=>e.type+(e.duration?' '+e.duration+'min':'')+' ('+e.intensity+')').join('; '):'none'}
+Activity: ${exercise.length?exercise.map(e=>e.type+(e.duration?' '+e.duration+'min':'')+(e.steps?' · '+parseInt(e.steps).toLocaleString()+' steps':'')+' ('+e.intensity+')').join('; '):'none'}
 Labs: ${[labK?'K '+labK:'',labNa?'Na '+labNa:'',labCr?'Cr '+labCr:'',labBNP?'BNP '+labBNP:'',labTSH?'TSH '+labTSH:'',labFT4?'FT4 '+labFT4:''].filter(Boolean).join(', ')||'none'}
 Clinical events: ${labEvents||'none'}
 Notes: ${notes||'none'}
@@ -1172,7 +1434,7 @@ Nutrition:
   Protein:  ~${Math.round(prot)} g
 
 Labs: ${[labK?'K '+labK+' mEq/L'+(parseFloat(labK)<3.5?' [LOW]':parseFloat(labK)>5.5?' [HIGH]':''):'',labNa?'Na '+labNa+' mEq/L':'',labCr?'Cr '+labCr+' mg/dL'+(parseFloat(labCr)>1.5?' [↑]':''):'',labBNP?'BNP '+labBNP:'',labTSH?'TSH '+labTSH+' mIU/L':''].filter(Boolean).join(' | ')||'None'}
-Activity: ${exercise.length?exercise.map(e=>e.type+(e.duration?' '+e.duration+'min':'')+' ('+e.intensity+')').join('; '):'None logged'}
+Activity: ${exercise.length?exercise.map(e=>e.type+(e.duration?' '+e.duration+'min':'')+(e.steps?' · '+parseInt(e.steps).toLocaleString()+' steps':'')+' ('+e.intensity+')').join('; '):'None logged'}
 ${labEvents?'Clinical events: '+labEvents:''}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1244,7 +1506,7 @@ function generateReport(){
   const labEvents=document.getElementById('labEvents')?.value||'None documented';
   const labLines=[labK?`    K:          ${labK} mEq/L${parseFloat(labK)<3.5?' ⚠ LOW':parseFloat(labK)>5.5?' ⚠ HIGH':''}`:null,labNa?`    Na:         ${labNa} mEq/L`:null,labCr?`    Creatinine: ${labCr} mg/dL${parseFloat(labCr)>1.5?' ⚠':''}`:'',labBNP?`    BNP/NTpro:  ${labBNP}`:null,labTSH?`    TSH:        ${labTSH} mIU/L`:null,labFT4?`    Free T4:    ${labFT4}`:null].filter(Boolean).join('\n')||'  No labs logged';
   const exState=getExerciseState();
-  const exLines=exState.length?exState.map(e=>`    ${e.type}${e.duration?' — '+e.duration+' min':''} (${e.intensity})`).join('\n'):'  None logged';
+  const exLines=exState.length?exState.map(e=>`    ${e.type}${e.duration?' — '+e.duration+' min':''}${e.steps?' · '+parseInt(e.steps).toLocaleString()+' steps':''} (${e.intensity})`).join('\n'):'  None logged';
   const edema=document.getElementById('edema').value||'Not assessed';
   const func=document.getElementById('funcStatus').value||'Not assessed';
   const symptoms=getCheckedSymptoms();
